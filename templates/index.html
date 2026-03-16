@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Shah Family NYC Guide 🗽</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#FDF6EC;--surface:#FFFFFF;--text:#2D2013;--muted:#8B7355;
+--accent:#C8622D;--accent-light:#F4E8DB;--gold:#D4A843;--gold-bg:#FFF8E7;
+--border:#E8DED0;--shadow:0 2px 12px rgba(45,32,19,0.08);
+--radius:12px;--radius-sm:8px;--radius-pill:50px;
+--food:#E07A3A;--sight:#4A90D9;--broadway:#9B59B6;
+--nav-height:60px;
+}
+@media(prefers-color-scheme:dark){:root{
+--bg:#1A1510;--surface:#252017;--text:#F0E6D8;--muted:#9B8B75;
+--accent:#E07A3A;--accent-light:#3A2A1A;--gold:#E0B850;--gold-bg:#2A2310;
+--border:#3A3225;--shadow:0 2px 12px rgba(0,0,0,0.3);
+--food:#E07A3A;--sight:#5BA3EC;--broadway:#B070D0;
+}}
+html,body{height:100%;overflow:hidden}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+
+/* Header */
+.header{background:linear-gradient(135deg,#C8622D,#D4A843);color:#fff;padding:20px 16px 14px;text-align:center;flex-shrink:0}
+.header h1{font-size:1.5rem;font-weight:700;margin-bottom:2px}
+.header .sub{font-size:0.82rem;opacity:0.9}
+
+/* View Container */
+.views{flex:1;overflow:hidden;position:relative}
+.view{position:absolute;inset:0;overflow:hidden;display:none;flex-direction:column}
+.view.active{display:flex}
+
+/* ===== LIST VIEW ===== */
+#listView .filters{flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px 6px}
+.filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:var(--radius-pill);border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.78rem;font-weight:500;white-space:nowrap;cursor:pointer;transition:all 0.15s;min-height:32px;user-select:none;-webkit-tap-highlight-color:transparent}
+.pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pill:active{transform:scale(0.96)}
+.toggle-row{display:flex;align-items:center;gap:8px;padding:6px 0 2px}
+.toggle{position:relative;width:40px;height:22px;background:var(--border);border-radius:11px;cursor:pointer;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:var(--gold)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform 0.2s}
+.toggle.on::after{transform:translateX(18px)}
+.toggle-label{font-size:0.78rem;color:var(--muted);font-weight:500}
+.sort-row{display:flex;align-items:center;gap:8px;padding:4px 0 2px}
+.sort-btn{font-size:0.75rem;color:var(--accent);font-weight:600;cursor:pointer;background:none;border:none;padding:4px 8px;border-radius:var(--radius-pill);border:1px solid var(--accent)}
+.sort-btn.active{background:var(--accent);color:#fff}
+.count{font-size:0.78rem;color:var(--muted);padding:6px 16px 4px;text-align:center;flex-shrink:0}
+.cards{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 16px 20px}
+.card-list{display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.card:active{transform:scale(0.98)}
+.card-top{display:flex;align-items:flex-start;gap:10px}
+.card-icon{font-size:1.3rem;flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--accent-light);border-radius:var(--radius-sm)}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:0.95rem;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.star-badge{display:inline-flex;align-items:center;gap:2px;background:var(--gold-bg);color:var(--gold);font-size:0.65rem;font-weight:600;padding:2px 7px;border-radius:var(--radius-pill);white-space:nowrap;border:1px solid var(--gold)}
+.card-addr{font-size:0.78rem;color:var(--muted);margin-top:2px}
+.card-dist{display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--accent);font-weight:500;margin-top:3px;background:var(--accent-light);padding:2px 8px;border-radius:var(--radius-pill)}
+.card-live-dist{display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--sight);font-weight:600;margin-top:3px;margin-left:4px;background:rgba(74,144,217,0.1);padding:2px 8px;border-radius:var(--radius-pill)}
+.card-body{display:none;opacity:0;transition:opacity 0.2s}
+.card.open .card-body{display:block;opacity:1}
+.card-desc{font-size:0.85rem;color:var(--text);margin-top:8px;line-height:1.5}
+.card-tip{font-size:0.78rem;color:var(--accent);margin-top:6px;padding:6px 10px;background:var(--accent-light);border-radius:var(--radius-sm)}
+.card-actions{display:flex;gap:8px;margin-top:8px}
+.card-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:var(--radius-pill);font-size:0.75rem;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:all 0.15s}
+.btn-directions{background:#4285F4;color:#fff}
+.btn-directions:active{background:#3367D6}
+.btn-map{background:var(--accent-light);color:var(--accent);border:1px solid var(--accent)}
+.card-chevron{color:var(--muted);font-size:0.75rem;transition:transform 0.2s;flex-shrink:0;margin-top:2px}
+.card.open .card-chevron{transform:rotate(180deg)}
+.empty{text-align:center;padding:48px 16px;color:var(--muted)}
+.empty-icon{font-size:2.5rem;margin-bottom:12px}
+
+/* ===== MAP VIEW ===== */
+#mapView{position:relative}
+#map{flex:1;z-index:1;min-height:300px;height:100%;width:100%}
+.map-filters{position:absolute;top:10px;left:10px;right:10px;z-index:1000;display:flex;gap:6px;overflow-x:auto;padding:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.map-filters::-webkit-scrollbar{display:none}
+.map-pill{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:var(--radius-pill);background:var(--surface);color:var(--text);font-size:0.75rem;font-weight:600;white-space:nowrap;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:2px solid transparent;-webkit-tap-highlight-color:transparent}
+.map-pill.active{border-color:var(--accent);background:var(--accent);color:#fff}
+.map-pill:active{transform:scale(0.95)}
+.map-locate-btn{position:absolute;bottom:20px;right:10px;z-index:1000;width:44px;height:44px;border-radius:50%;background:var(--surface);border:none;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.map-locate-btn:active{background:var(--accent-light)}
+.map-legend{position:absolute;bottom:20px;left:10px;z-index:1000;background:var(--surface);border-radius:var(--radius-sm);padding:8px 10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);font-size:0.7rem;line-height:1.8}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
+
+/* ===== CHAT VIEW ===== */
+#chatView{display:none;flex-direction:column}
+#chatView.active{display:flex}
+.chat-messages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-bubble{max-width:85%;padding:10px 14px;border-radius:16px;font-size:0.88rem;line-height:1.5;word-wrap:break-word}
+.chat-bubble.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px}
+.chat-bubble.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.chat-bubble.typing{align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--muted);font-style:italic}
+.chat-input-bar{flex-shrink:0;display:flex;gap:8px;padding:10px 16px;border-top:1px solid var(--border);background:var(--surface)}
+.chat-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-pill);font-size:0.88rem;background:var(--bg);color:var(--text);outline:none;font-family:inherit}
+.chat-input:focus{border-color:var(--accent)}
+.chat-send{width:42px;height:42px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-send:disabled{opacity:0.5;cursor:not-allowed}
+.chat-send:active:not(:disabled){background:#B5541F}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{flex-shrink:0;display:flex;background:var(--surface);border-top:1px solid var(--border);height:var(--nav-height);z-index:2000}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;cursor:pointer;color:var(--muted);font-size:0.7rem;font-weight:500;-webkit-tap-highlight-color:transparent;transition:color 0.15s}
+.nav-btn.active{color:var(--accent)}
+.nav-icon{font-size:1.3rem}
+
+/* Leaflet popup customization */
+.leaflet-popup-content-wrapper{border-radius:var(--radius)!important;box-shadow:var(--shadow)!important}
+.leaflet-popup-content{margin:12px!important;font-family:system-ui,-apple-system,'Segoe UI',sans-serif!important;font-size:0.85rem!important;line-height:1.5!important}
+.popup-name{font-weight:700;font-size:0.95rem;margin-bottom:4px}
+.popup-star{color:var(--gold);font-size:0.75rem}
+.popup-addr{color:#666;font-size:0.78rem;margin-bottom:4px}
+.popup-desc{margin-bottom:8px;font-size:0.82rem}
+.popup-dist{font-size:0.75rem;color:var(--accent);font-weight:600;margin-bottom:6px}
+.popup-btn{display:inline-block;padding:6px 14px;background:#4285F4;color:#fff;text-decoration:none;border-radius:var(--radius-pill);font-size:0.75rem;font-weight:600}
+.popup-btn:active{background:#3367D6}
+
+/* Safe area for notch phones */
+@supports(padding-bottom: env(safe-area-inset-bottom)){
+  .bottom-nav{padding-bottom:env(safe-area-inset-bottom)}
+}
+
+/* ===== DESKTOP LAYOUT ===== */
+@media(min-width:768px){
+  .header h1{font-size:1.8rem}
+  .header .sub{font-size:0.9rem}
+  .header{padding:24px 24px 18px}
+  
+  /* Wider cards container */
+  .cards{padding:16px 24px 24px}
+  .card-list{max-width:900px;display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .card{padding:18px}
+  .card-name{font-size:1.05rem}
+  .card-addr{font-size:0.85rem}
+  .card-desc{font-size:0.9rem}
+  .card-tip{font-size:0.85rem}
+  .card-icon{width:40px;height:40px;font-size:1.5rem}
+  
+  /* Bigger filter pills */
+  .pill{padding:7px 16px;font-size:0.85rem;min-height:36px}
+  .filter-row{gap:8px}
+  #listView .filters{padding:14px 24px 8px}
+  .count{font-size:0.85rem;padding:8px 24px}
+  
+  /* Chat area centered */
+  .chat-messages{max-width:700px;margin:0 auto;width:100%;padding:24px}
+  .chat-input-bar{max-width:700px;margin:0 auto;width:100%;padding:12px 24px}
+  .chat-bubble{font-size:0.92rem;padding:12px 16px}
+  .chat-input{font-size:0.92rem;padding:12px 16px}
+  
+  /* Map full width - already works */
+  .map-pill{padding:8px 16px;font-size:0.82rem}
+  
+  /* Bottom nav: constrain width */
+  .bottom-nav{max-width:500px;margin:0 auto;width:100%;border-radius:16px 16px 0 0;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+  .nav-btn{font-size:0.78rem;gap:3px}
+  .nav-icon{font-size:1.4rem}
+  
+  /* Empty state */
+  .empty{padding:64px 24px}
+  .empty-icon{font-size:3rem}
+}
+
+@media(min-width:1024px){
+  .card-list{grid-template-columns:repeat(2,1fr);max-width:1000px;gap:16px}
+  .card{padding:20px}
+  .header{padding:28px 32px 20px}
+  .header h1{font-size:2rem}
+  #listView .filters{padding:16px 32px 10px;max-width:1000px;margin:0 auto}
+  .count{max-width:1000px;margin:0 auto}
+  .cards{padding:16px 32px 32px}
+}
+
+@media(min-width:1280px){
+  .card-list{grid-template-columns:repeat(3,1fr);max-width:1200px}
+  #listView .filters{max-width:1200px}
+  .count{max-width:1200px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>Shah Family NYC Guide 🗽</h1>
+<div class="sub">Curated by Vishal • March 2026</div>
+</div>
+
+<div class="views">
+<!-- LIST VIEW -->
+<div class="view active" id="listView">
+<div class="filters" id="filters">
+<div class="filter-row" id="catRow"></div>
+<div class="filter-row" id="subRow"></div>
+<div class="sort-row">
+  <span style="font-size:0.75rem;color:var(--muted)">Sort:</span>
+  <button class="sort-btn active" id="sortDefault" onclick="setSort('default')">Default</button>
+  <button class="sort-btn" id="sortNearest" onclick="setSort('nearest')">📍 Nearest</button>
+</div>
+<div class="toggle-row">
+<div class="toggle" id="starToggle" onclick="toggleStars()"></div>
+<div class="toggle-label">⭐ Vishal's Picks only</div>
+</div>
+</div>
+<div class="count" id="count"></div>
+<div class="cards">
+<div class="card-list" id="cards"></div>
+<div style="text-align:center;padding:16px;font-size:0.75rem;color:var(--muted)">Made with ❤️ by DootDoot ⚡ for the Shah Family</div>
+</div>
+</div>
+
+<!-- MAP VIEW -->
+<div class="view" id="mapView">
+<div class="map-filters" id="mapFilters">
+  <div class="map-pill active" data-cat="all" onclick="setMapFilter('all',this)">All</div>
+  <div class="map-pill" data-cat="food" onclick="setMapFilter('food',this)">🍽️ Food</div>
+  <div class="map-pill" data-cat="sightseeing" onclick="setMapFilter('sightseeing',this)">🏙️ Sights</div>
+  <div class="map-pill" data-cat="broadway" onclick="setMapFilter('broadway',this)">🎭 Broadway</div>
+  <div class="map-pill" data-cat="starred" onclick="setMapFilter('starred',this)">⭐ Picks</div>
+</div>
+<div id="map"></div>
+<button class="map-locate-btn" onclick="locateMe()" title="Find me">📍</button>
+<div class="map-legend">
+  <div><span class="legend-dot" style="background:var(--food)"></span>Food</div>
+  <div><span class="legend-dot" style="background:var(--sight)"></span>Sightseeing</div>
+  <div><span class="legend-dot" style="background:var(--broadway)"></span>Broadway</div>
+  <div><span class="legend-dot" style="background:var(--gold)"></span>⭐ Vishal's Pick</div>
+</div>
+</div>
+
+<!-- CHAT VIEW -->
+<div class="view" id="chatView">
+<div class="chat-messages" id="chatMessages">
+  <div class="chat-bubble bot">Hi! I'm your NYC guide, powered by Vishal's recommendations. 🗽 Ask me anything — "What's good for Indian food nearby?" or "Where should we go for bagels?" I know all 47 spots!</div>
+</div>
+<div class="chat-input-bar">
+  <input class="chat-input" id="chatInput" type="text" placeholder="Ask about food, sights, Broadway..." maxlength="500" autocomplete="off">
+  <button class="chat-send" id="chatSend" onclick="sendChat()">➤</button>
+</div>
+</div>
+</div>
+
+<nav class="bottom-nav">
+<button class="nav-btn active" data-view="listView" onclick="switchView('listView',this)">
+<span class="nav-icon">📋</span>List
+</button>
+<button class="nav-btn" data-view="mapView" onclick="switchView('mapView',this)">
+<span class="nav-icon">🗺️</span>Map
+</button>
+<button class="nav-btn" data-view="chatView" onclick="switchView('chatView',this)">
+<span class="nav-icon">💬</span>Chat
+</button>
+</nav>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ===== DATA =====
+const DATA = {{ spots|safe }};
+const DEFAULT_LAT = 40.7438, DEFAULT_LNG = -73.9927;
+const CAT_ICONS = {food:"🍽️",sightseeing:"🏙️",broadway:"🎭"};
+const SUB_ICONS = {bagels:"🥯",pizza:"🍕",indian:"🇮🇳",casual:"🍔",finedining:"✨",dessert:"🍰",mustdo:"⭐",unique:"💎",musical:"🎵"};
+const SUB_LABELS = {bagels:"Bagels",pizza:"Pizza",indian:"Indian",casual:"Casual",finedining:"Fine Dining",dessert:"Dessert & Coffee",mustdo:"Must-Do",unique:"Unique",musical:"Musicals"};
+const CAT_COLORS = {food:"#E07A3A",sightseeing:"#4A90D9",broadway:"#9B59B6"};
+
+// ===== STATE =====
+let filters = {cat:'all', sub:'all', stars:false};
+let sortMode = 'default';
+let userLat = null, userLng = null;
+let map = null, markers = [], userMarker = null;
+let mapFilter = 'all';
+let mapInitialized = false;
+
+// ===== GEOLOCATION =====
+function getLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.watchPosition(
+    pos => {
+      userLat = pos.coords.latitude;
+      userLng = pos.coords.longitude;
+      document.getElementById('sortNearest').style.display = '';
+      renderCards();
+      updateMapUser();
+    },
+    () => {},
+    {enableHighAccuracy:true, maximumAge:30000}
+  );
+}
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 3959; // miles
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function distanceText(miles) {
+  const mins = Math.round(miles / 0.05); // ~3mph walking = 0.05mi/min
+  if (mins < 1) return "Right here!";
+  if (mins <= 60) return mins + " min walk";
+  return (miles).toFixed(1) + " mi away";
+}
+
+// ===== LIST VIEW =====
+function renderPills() {
+  const catRow = document.getElementById('catRow');
+  catRow.innerHTML = `<div class="pill${filters.cat==='all'?' active':''}" onclick="setCat('all')">All</div>`;
+  ['food','sightseeing','broadway'].forEach(c => {
+    catRow.innerHTML += `<div class="pill${filters.cat===c?' active':''}" onclick="setCat('${c}')"><span>${CAT_ICONS[c]}</span>${c[0].toUpperCase()+c.slice(1)}</div>`;
+  });
+  const subRow = document.getElementById('subRow');
+  let subs = new Set();
+  DATA.forEach(d => { if(filters.cat==='all'||d.category===filters.cat) subs.add(d.subcategory); });
+  if(subs.size > 1) {
+    subRow.style.display = 'flex';
+    subRow.innerHTML = `<div class="pill${filters.sub==='all'?' active':''}" onclick="setSub('all')">All</div>`;
+    [...subs].forEach(s => {
+      subRow.innerHTML += `<div class="pill${filters.sub===s?' active':''}" onclick="setSub('${s}')"><span>${SUB_ICONS[s]||''}</span>${SUB_LABELS[s]||s}</div>`;
+    });
+  } else { subRow.style.display='none'; }
+}
+
+function getFiltered() {
+  let items = DATA.filter(d => {
+    if(filters.cat!=='all' && d.category!==filters.cat) return false;
+    if(filters.sub!=='all' && d.subcategory!==filters.sub) return false;
+    if(filters.stars && !d.starred) return false;
+    return true;
+  });
+  if(sortMode==='nearest' && userLat!==null) {
+    items.forEach(d => { d._dist = haversine(userLat, userLng, d.lat, d.lng); });
+    items.sort((a,b) => a._dist - b._dist);
+  }
+  return items;
+}
+
+function renderCards() {
+  const container = document.getElementById('cards');
+  const items = getFiltered();
+  document.getElementById('count').textContent = items.length + ' spot' + (items.length!==1?'s':'') + ' found';
+  if(!items.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No spots match your filters.<br>Try adjusting above!</div></div>';
+    return;
+  }
+  container.innerHTML = items.map(d => {
+    let liveDistHtml = '';
+    if(userLat!==null) {
+      const dist = d._dist || haversine(userLat, userLng, d.lat, d.lng);
+      liveDistHtml = `<span class="card-live-dist">📍 ${distanceText(dist)}</span>`;
+    }
+    const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lng}&travelmode=walking`;
+    return `<div class="card" onclick="toggleCard(this)">
+      <div class="card-top">
+        <div class="card-icon">${CAT_ICONS[d.category]||'📍'}</div>
+        <div class="card-info">
+          <div class="card-name">${d.name}${d.starred?'<span class="star-badge">⭐ Vishal\'s Pick</span>':''}</div>
+          <div class="card-addr">${d.address}</div>
+          <div class="card-dist">🚶 ${d.distanceText}</div>${liveDistHtml}
+        </div>
+        <div class="card-chevron">▼</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">${d.description}</div>
+        ${d.tip ? `<div class="card-tip">💡 ${d.tip}</div>` : ''}
+        <div class="card-actions">
+          <a class="card-btn btn-directions" href="${dirUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🗺️ Get Directions</a>
+          <button class="card-btn btn-map" onclick="event.stopPropagation();showOnMap(${d.lat},${d.lng})">📍 Show on Map</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(el) { el.classList.toggle('open'); }
+function setCat(c) { filters.cat=c; filters.sub='all'; renderPills(); renderCards(); }
+function setSub(s) { filters.sub=s; renderPills(); renderCards(); }
+function setSort(mode) {
+  sortMode = mode;
+  document.getElementById('sortDefault').classList.toggle('active', mode==='default');
+  document.getElementById('sortNearest').classList.toggle('active', mode==='nearest');
+  renderCards();
+}
+function toggleStars() {
+  filters.stars = !filters.stars;
+  document.getElementById('starToggle').classList.toggle('on', filters.stars);
+  renderCards();
+}
+
+// ===== MAP VIEW =====
+function initMap() {
+  if(mapInitialized) return;
+  mapInitialized = true;
+  const cLat = userLat || DEFAULT_LAT;
+  const cLng = userLng || DEFAULT_LNG;
+  map = L.map('map', {zoomControl:false}).setView([cLat, cLng], 13);
+  L.control.zoom({position:'topright'}).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap',
+    maxZoom:19
+  }).addTo(map);
+
+  // Home base marker
+  const homeIcon = L.divIcon({
+    className:'',
+    html:'<div style="font-size:24px;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))">🏠</div>',
+    iconSize:[28,28],iconAnchor:[14,14]
+  });
+  L.marker([DEFAULT_LAT, DEFAULT_LNG], {icon:homeIcon}).addTo(map)
+    .bindPopup('<div class="popup-name">🏠 Home Base</div><div class="popup-addr">101 W 24th St, Chelsea/Flatiron</div><div class="popup-desc">The apartment — your starting point for everything!</div>');
+
+  addMapMarkers();
+  updateMapUser();
+}
+
+function createMarkerIcon(spot) {
+  const color = CAT_COLORS[spot.category] || '#888';
+  const star = spot.starred ? '<span style="position:absolute;top:-6px;right:-6px;font-size:12px">⭐</span>' : '';
+  const icon = CAT_ICONS[spot.category] || '📍';
+  return L.divIcon({
+    className:'',
+    html:`<div style="position:relative;width:32px;height:32px;background:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 6px rgba(0,0,0,0.3);border:2px solid #fff">${icon}${star}</div>`,
+    iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-18]
+  });
+}
+
+function addMapMarkers() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+  DATA.forEach(spot => {
+    if(mapFilter !== 'all') {
+      if(mapFilter === 'starred' && !spot.starred) return;
+      if(mapFilter !== 'starred' && spot.category !== mapFilter) return;
+    }
+    const icon = createMarkerIcon(spot);
+    let distHtml = '';
+    if(userLat !== null) {
+      const d = haversine(userLat, userLng, spot.lat, spot.lng);
+      distHtml = `<div class="popup-dist">📍 ${distanceText(d)} from you</div>`;
+    }
+    const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}&travelmode=walking`;
+    const popup = `
+      <div class="popup-name">${spot.name} ${spot.starred?'<span class="popup-star">⭐ Vishal\'s Pick</span>':''}</div>
+      <div class="popup-addr">${spot.address}</div>
+      ${distHtml}
+      <div class="popup-desc">${spot.description}</div>
+      <a class="popup-btn" href="${dirUrl}" target="_blank" rel="noopener">🗺️ Walking Directions</a>
+    `;
+    const m = L.marker([spot.lat, spot.lng], {icon}).addTo(map).bindPopup(popup, {maxWidth:250});
+    markers.push(m);
+  });
+}
+
+function setMapFilter(cat, el) {
+  mapFilter = cat;
+  document.querySelectorAll('.map-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  addMapMarkers();
+}
+
+function updateMapUser() {
+  if(!map || userLat === null) return;
+  if(userMarker) map.removeLayer(userMarker);
+  const icon = L.divIcon({
+    className:'',
+    html:'<div style="width:16px;height:16px;background:#4285F4;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 4px rgba(66,133,244,0.3),0 2px 4px rgba(0,0,0,0.2);animation:pulse 2s infinite"></div><style>@keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(66,133,244,0.3)}50%{box-shadow:0 0 0 12px rgba(66,133,244,0.1)}}</style>',
+    iconSize:[16,16],iconAnchor:[8,8]
+  });
+  userMarker = L.marker([userLat, userLng], {icon, zIndexOffset:1000}).addTo(map);
+}
+
+function locateMe() {
+  if(!map) return;
+  if(userLat !== null) {
+    map.flyTo([userLat, userLng], 15);
+  } else {
+    map.flyTo([DEFAULT_LAT, DEFAULT_LNG], 14);
+  }
+}
+
+function showOnMap(lat, lng) {
+  switchView('mapView', null);
+  setTimeout(() => {
+    if(!mapInitialized) initMap();
+    map.flyTo([lat, lng], 17);
+    // Open the popup for this marker
+    markers.forEach(m => {
+      const ll = m.getLatLng();
+      if(Math.abs(ll.lat-lat)<0.0001 && Math.abs(ll.lng-lng)<0.0001) {
+        m.openPopup();
+      }
+    });
+  }, 100);
+}
+
+// ===== CHAT =====
+const chatMessages = document.getElementById('chatMessages');
+const chatInput = document.getElementById('chatInput');
+const chatSend = document.getElementById('chatSend');
+
+chatInput.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+
+async function sendChat() {
+  const msg = chatInput.value.trim();
+  if(!msg) return;
+  chatInput.value = '';
+  chatSend.disabled = true;
+
+  // User bubble
+  const userBubble = document.createElement('div');
+  userBubble.className = 'chat-bubble user';
+  userBubble.textContent = msg;
+  chatMessages.appendChild(userBubble);
+
+  // Typing indicator
+  const typing = document.createElement('div');
+  typing.className = 'chat-bubble typing';
+  typing.textContent = 'Thinking...';
+  chatMessages.appendChild(typing);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  try {
+    const body = {message: msg};
+    if(userLat !== null) { body.lat = userLat; body.lng = userLng; }
+    const resp = await fetch('/chat', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await resp.json();
+    typing.remove();
+    const botBubble = document.createElement('div');
+    botBubble.className = 'chat-bubble bot';
+    if(data.error) {
+      botBubble.textContent = '⚠️ ' + data.error;
+    } else {
+      botBubble.innerHTML = formatReply(data.reply);
+    }
+    chatMessages.appendChild(botBubble);
+  } catch(e) {
+    typing.remove();
+    const errBubble = document.createElement('div');
+    errBubble.className = 'chat-bubble bot';
+    errBubble.textContent = '⚠️ Connection error. Try again!';
+    chatMessages.appendChild(errBubble);
+  }
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  chatSend.disabled = false;
+  chatInput.focus();
+}
+
+function formatReply(text) {
+  // Basic formatting: bold, newlines, links
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>')
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" style="color:var(--accent)">$1</a>');
+}
+
+// ===== NAV =====
+const VIEW_HASHES = {listView:'#list', mapView:'#map', chatView:'#chat'};
+const HASH_VIEWS = {'#list':'listView', '#map':'mapView', '#chat':'chatView', '':'listView'};
+
+function switchView(viewId, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  if(btn) btn.classList.add('active');
+  else {
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      if(b.dataset.view === viewId) b.classList.add('active');
+    });
+  }
+  // Update URL hash without triggering hashchange
+  const hash = VIEW_HASHES[viewId] || '#list';
+  if(location.hash !== hash) history.pushState(null, '', hash);
+  if(viewId === 'mapView') {
+    setTimeout(() => {
+      if(!mapInitialized) initMap();
+      else map.invalidateSize();
+    }, 50);
+    // Extra invalidate after layout settles
+    setTimeout(() => { if(map) map.invalidateSize(); }, 200);
+  }
+  if(viewId === 'chatView') {
+    setTimeout(() => chatInput.focus(), 100);
+  }
+}
+
+// Handle browser back/forward
+window.addEventListener('hashchange', () => {
+  const viewId = HASH_VIEWS[location.hash] || 'listView';
+  switchView(viewId, null);
+});
+
+// Load correct view from hash on page load
+function initFromHash() {
+  const viewId = HASH_VIEWS[location.hash] || 'listView';
+  if(viewId !== 'listView') switchView(viewId, null);
+}
+
+// ===== INIT =====
+// Hide nearest sort until we have location
+document.getElementById('sortNearest').style.display = 'none';
+renderPills();
+renderCards();
+getLocation();
+initFromHash();
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shah Family NYC Guide</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#FDF6EC;--surface:#FFFFFF;--text:#2D2013;--muted:#8B7355;
+--accent:#C8622D;--accent-light:#F4E8DB;--gold:#D4A843;--gold-bg:#FFF8E7;
+--border:#E8DED0;--shadow:0 2px 12px rgba(45,32,19,0.08);
+--radius:12px;--radius-sm:8px;--radius-pill:50px;
+}
+@media(prefers-color-scheme:dark){:root{
+--bg:#1A1510;--surface:#252017;--text:#F0E6D8;--muted:#9B8B75;
+--accent:#E07A3A;--accent-light:#3A2A1A;--gold:#E0B850;--gold-bg:#2A2310;
+--border:#3A3225;--shadow:0 2px 12px rgba(0,0,0,0.3);
+}}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
+.header{background:linear-gradient(135deg,#C8622D,#D4A843);color:#fff;padding:32px 16px 24px;text-align:center}
+.header h1{font-size:1.75rem;font-weight:700;margin-bottom:4px}
+.header .sub{font-size:0.9rem;opacity:0.9}
+.header .addr{font-size:0.8rem;opacity:0.75;margin-top:6px}
+.filters{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:12px 16px 8px;overflow:visible}
+.filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:var(--radius-pill);border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.82rem;font-weight:500;white-space:nowrap;cursor:pointer;transition:all 0.15s ease;min-height:36px;user-select:none;-webkit-tap-highlight-color:transparent}
+.pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pill:hover{border-color:var(--accent)}
+.pill-icon{font-size:1rem}
+.toggle-row{display:flex;align-items:center;gap:8px;padding:8px 0 4px}
+.toggle{position:relative;width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:var(--gold)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform 0.2s}
+.toggle.on::after{transform:translateX(20px)}
+.toggle-label{font-size:0.82rem;color:var(--muted);font-weight:500}
+.count{font-size:0.8rem;color:var(--muted);padding:4px 0 8px;text-align:center}
+.cards{padding:12px 16px 100px;display:flex;flex-direction:column;gap:12px;max-width:640px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:all 0.15s ease;-webkit-tap-highlight-color:transparent}
+.card:active{transform:scale(0.98)}
+.card-top{display:flex;align-items:flex-start;gap:10px}
+.card-icon{font-size:1.5rem;flex-shrink:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--accent-light);border-radius:var(--radius-sm)}
+.card-info{flex:1;min-width:0}
+.card-name{font-size:1rem;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.star-badge{display:inline-flex;align-items:center;gap:3px;background:var(--gold-bg);color:var(--gold);font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:var(--radius-pill);white-space:nowrap;border:1px solid var(--gold)}
+.card-addr{font-size:0.82rem;color:var(--muted);margin-top:2px}
+.card-dist{display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:var(--accent);font-weight:500;margin-top:4px;background:var(--accent-light);padding:2px 8px;border-radius:var(--radius-pill)}
+.card-desc{font-size:0.88rem;color:var(--text);margin-top:10px;line-height:1.55;display:none;opacity:0;transition:opacity 0.2s}
+.card.open .card-desc{display:block;opacity:1}
+.card-tip{font-size:0.82rem;color:var(--accent);margin-top:8px;padding:8px 12px;background:var(--accent-light);border-radius:var(--radius-sm);display:none}
+.card.open .card-tip{display:block}
+.card-chevron{color:var(--muted);font-size:0.8rem;transition:transform 0.2s;flex-shrink:0;margin-top:2px}
+.card.open .card-chevron{transform:rotate(180deg)}
+.footer{text-align:center;padding:24px 16px;font-size:0.8rem;color:var(--muted)}
+.empty{text-align:center;padding:48px 16px;color:var(--muted)}
+.empty-icon{font-size:2.5rem;margin-bottom:12px}
+.empty-text{font-size:0.95rem}
+@media(min-width:640px){
+.header h1{font-size:2.25rem}
+.cards{padding:16px 24px 100px}
+.filters{padding:12px 24px 8px}
+}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>Shah Family NYC Guide 🗽</h1>
+<div class="sub">Curated by Vishal • March 2026</div>
+<div class="addr">🏠 Home base: 101 W 24th St, Chelsea/Flatiron</div>
+</div>
+<div class="filters" id="filters">
+<div class="filter-row" id="catRow"></div>
+<div class="filter-row" id="subRow"></div>
+<div class="filter-row" id="distRow"></div>
+<div class="toggle-row">
+<div class="toggle" id="starToggle" onclick="toggleStars()"></div>
+<div class="toggle-label">⭐ Vishal's Picks only</div>
+</div>
+</div>
+<div class="count" id="count"></div>
+<div class="cards" id="cards"></div>
+<div class="footer">Made with ❤️ by DootDoot ⚡ for the Shah Family</div>
+<script>
+const DATA=[{"name": "Tompkins Square Bagels", "category": "food", "subcategory": "bagels", "starred": true, "address": "165 Avenue A, East Village", "distance": "far", "distanceText": "25 min subway", "description": "The best bagels in the city, period. Hand-rolled, kettle-boiled, perfect chew. Get there early. Try the everything bagel with scallion cream cheese.", "tip": "F from 23rd St to 2nd Ave, or 10 min Uber"}, {"name": "Ess-A-Bagel", "category": "food", "subcategory": "bagels", "starred": true, "address": "831 3rd Ave, Midtown East", "distance": "medium", "distanceText": "20 min subway", "description": "Classic NYC bagel institution. Massive bagels, generous spreads. The hand-rolled bagels are legitimately huge.", "tip": "6 from 23rd St to 51st St"}, {"name": "Modern Bread and Bagel", "category": "food", "subcategory": "bagels", "starred": true, "address": "472 Columbus Ave, UWS (also 25 W 28th St)", "distance": "close", "distanceText": "5 min walk (28th St location)", "description": "Gluten-free and allergy-friendly bakery. Great bagels, sandwiches, and pastries. The 28th St location is walking distance!", "tip": "The 28th St location is a 5-minute walk from the apartment!"}, {"name": "Russ & Daughters", "category": "food", "subcategory": "bagels", "starred": false, "address": "179 E Houston St, Lower East Side", "distance": "medium", "distanceText": "20 min subway", "description": "Iconic NYC appetizing shop since 1914. Lox, bagels, whitefish — the Jewish deli experience at its finest.", "tip": ""}, {"name": "Clinton St. Baking Company", "category": "food", "subcategory": "bagels", "starred": false, "address": "4 Clinton St, Lower East Side", "distance": "medium", "distanceText": "20 min subway", "description": "Famous for their pancakes and brunch. The blueberry pancakes are legendary. Expect a wait on weekends.", "tip": ""}, {"name": "Joe's Pizza", "category": "food", "subcategory": "pizza", "starred": true, "address": "7 Carmine St, Greenwich Village", "distance": "medium", "distanceText": "15 min walk", "description": "THE classic NYC slice. No frills, no gimmicks — just a perfect New York cheese slice. Grab a slice, fold it in half, eat it standing on the sidewalk.", "tip": ""}, {"name": "Chelsea Market", "category": "food", "subcategory": "casual", "starred": false, "address": "75 9th Ave, Chelsea", "distance": "close", "distanceText": "10 min walk", "description": "Food hall in a converted Nabisco factory. Great for wandering and grazing. Los Tacos No. 1, Lobster Place, Dizengoff. Perfect rainy-day option.", "tip": ""}, {"name": "Prince Street Pizza", "category": "food", "subcategory": "pizza", "starred": false, "address": "27 Prince St, Nolita", "distance": "medium", "distanceText": "20 min subway", "description": "Famous for their pepperoni square (the 'Soho Square') — thick Sicilian-style with crispy cup pepperoni.", "tip": ""}, {"name": "Xi'an Famous Foods", "category": "food", "subcategory": "casual", "starred": false, "address": "34 W 14th St", "distance": "close", "distanceText": "10 min walk", "description": "Hand-pulled noodles, spicy cumin lamb — real NYC cheap-eats experience. The liang pi cold skin noodles are incredible.", "tip": ""}, {"name": "Katz's Delicatessen", "category": "food", "subcategory": "casual", "starred": false, "address": "205 E Houston St, Lower East Side", "distance": "medium", "distanceText": "20 min subway", "description": "The most famous deli in America since 1888. Get the pastrami on rye — it's life-changing. 'I'll have what she's having' from When Harry Met Sally.", "tip": ""}, {"name": "L'Industrie Pizzeria", "category": "food", "subcategory": "pizza", "starred": true, "address": "254 S 2nd St, Williamsburg (Brooklyn)", "distance": "far", "distanceText": "30 min subway", "description": "Arguably the best pizza in NYC right now. Thin, crispy, fresh burrata on top. Worth the trip to Brooklyn.", "tip": "L train to Bedford Ave"}, {"name": "Rubirosa", "category": "food", "subcategory": "pizza", "starred": true, "address": "235 Mulberry St, Nolita", "distance": "medium", "distanceText": "20 min subway", "description": "Thin-crust Italian-American. The vodka pizza is legendary. We've been here multiple times. The tie-dye vodka pie is a must-order.", "tip": "F to Broadway-Lafayette. Make a reservation on Resy."}, {"name": "Carbone", "category": "food", "subcategory": "finedining", "starred": false, "address": "181 Thompson St, Greenwich Village", "distance": "medium", "distanceText": "15 min walk", "description": "Italian-American fine dining with retro vibes. The spicy rigatoni vodka is famous. Expensive but a real experience.", "tip": "Hard to get a reservation — try Resy at midnight"}, {"name": "Via Carota", "category": "food", "subcategory": "finedining", "starred": false, "address": "51 Grove St, West Village", "distance": "medium", "distanceText": "15 min walk", "description": "Rustic Italian — seasonal, simple, perfect. The carciofi fried artichokes are legendary. Walk-ins only, go early (5:30 PM).", "tip": ""}, {"name": "The Smith", "category": "food", "subcategory": "casual", "starred": false, "address": "1900 Broadway, Union Square", "distance": "close", "distanceText": "10 min walk", "description": "Solid American bistro — great for a comfortable dinner without the fuss. Good cocktails, reliable food.", "tip": "Union Square location is closest"}, {"name": "Masala Times", "category": "food", "subcategory": "indian", "starred": true, "address": "194 Bleecker St, Greenwich Village", "distance": "medium", "distanceText": "15 min walk", "description": "Good Indian food in the Village. Solid for when you want something familiar and comforting.", "tip": ""}, {"name": "Adda Indian Canteen", "category": "food", "subcategory": "indian", "starred": false, "address": "31-31 Thomson Ave, Long Island City, Queens", "distance": "far", "distanceText": "25 min subway", "description": "One of the best Indian restaurants in the city — Michelin-recognized. Worth the trip to Queens. The biryani and kebabs are outstanding.", "tip": "7 train from 34th St-Hudson Yards"}, {"name": "Dhamaka", "category": "food", "subcategory": "indian", "starred": false, "address": "119 1st Ave, East Village", "distance": "far", "distanceText": "25 min subway", "description": "Regional Indian food you can't find anywhere else. Michelin Bib Gourmand. The offal dishes and regional specialties are incredible.", "tip": ""}, {"name": "Indian Accent", "category": "food", "subcategory": "indian", "starred": true, "address": "123 W 56th St, Midtown", "distance": "far", "distanceText": "25 min subway", "description": "One of the most celebrated Indian restaurants in the world — Manish Mehrotra's NYC outpost. The tasting menu reimagines Indian food.", "tip": "F to 57th St"}, {"name": "Tamarind Tribeca", "category": "food", "subcategory": "indian", "starred": false, "address": "99 Hudson St, Tribeca", "distance": "medium", "distanceText": "20 min subway", "description": "Upscale Indian — beautiful space, refined food. The lamb chops and tandoori dishes are excellent.", "tip": ""}, {"name": "HanGawi", "category": "food", "subcategory": "indian", "starred": true, "address": "12 E 32nd St, Koreatown", "distance": "close", "distanceText": "10 min walk", "description": "Fully vegan Korean — Jain-friendly (no onion, no garlic). Shoes off at the door, low tables. Beautiful, meditative, incredible food.", "tip": ""}, {"name": "Bungalow", "category": "food", "subcategory": "indian", "starred": false, "address": "24 First Ave, East Village", "distance": "far", "distanceText": "25 min subway", "description": "Chef Vikas Khanna's Michelin-starred flagship. Condé Nast's best new restaurants in the world. A journey through India's 28 states.", "tip": "F to 2nd Ave. Sun-Wed 5-10:30 PM, Thu-Sat 5-11 PM. Reserve ahead!"}, {"name": "GupShup", "category": "food", "subcategory": "indian", "starred": true, "address": "105 Lexington Ave, Gramercy/Curry Hill", "distance": "close", "distanceText": "10 min walk", "description": "Bungalow's sister restaurant — same team, more casual. Modern Indian street food and cocktails. Vibrant and fun.", "tip": "Right in Curry Hill, easy walk from the apartment"}, {"name": "Baar Baar", "category": "food", "subcategory": "indian", "starred": true, "address": "22 E 1st St, East Village", "distance": "medium", "distanceText": "20 min subway", "description": "Modern Indian — stylish space, creative cocktails, elevated takes on Indian classics. Great small plates for sharing.", "tip": ""}, {"name": "The Kati Roll Company", "category": "food", "subcategory": "indian", "starred": true, "address": "99 MacDougal St, Village (also 39 W 46th St)", "distance": "medium", "distanceText": "15 min walk (MacDougal)", "description": "Kolkata-style kati rolls — basically Indian burritos. Cheap, fast, delicious. Midtown location near Broadway theaters.", "tip": "Two locations: MacDougal St (15 min walk) or 46th St near Times Square"}, {"name": "Curry Hill", "category": "food", "subcategory": "indian", "starred": false, "address": "Lexington Ave, 26th-30th St", "distance": "close", "distanceText": "5-10 min walk", "description": "A strip of Indian restaurants — Patiala, Dhaba, Chennai Garden, Tiffin Wallah. Not fancy, but convenient, authentic, and affordable.", "tip": "5-10 minute walk east from the apartment"}, {"name": "Levain Bakery", "category": "food", "subcategory": "dessert", "starred": false, "address": "167 W 74th St, Upper West Side", "distance": "medium", "distanceText": "20 min subway", "description": "Massive, gooey, underbaked cookies — the chocolate chip walnut is iconic. One cookie is big enough to split.", "tip": ""}, {"name": "Magnolia Bakery", "category": "food", "subcategory": "dessert", "starred": false, "address": "401 Bleecker St, West Village", "distance": "medium", "distanceText": "15 min walk", "description": "Classic cupcakes and banana pudding. The banana pudding is actually the move here. Old-school vibes.", "tip": ""}, {"name": "Dominique Ansel Bakery", "category": "food", "subcategory": "dessert", "starred": false, "address": "189 Spring St, Soho", "distance": "medium", "distanceText": "20 min subway", "description": "Inventor of the Cronut. Beyond that gimmick, the pastries are world-class. The DKA (Kouign Amann) is incredible.", "tip": ""}, {"name": "Joe Coffee", "category": "food", "subcategory": "dessert", "starred": false, "address": "131 W 21st St", "distance": "close", "distanceText": "3 min walk", "description": "One of the best local coffee chains in NYC. Practically at your doorstep. Great espresso.", "tip": ""}, {"name": "9/11 Memorial & Museum", "category": "sightseeing", "subcategory": "mustdo", "starred": true, "address": "180 Greenwich St, Financial District", "distance": "medium", "distanceText": "20 min subway", "description": "Two massive waterfalls in the footprints of the Twin Towers. The museum below is intense but powerful. Give it 2-3 hours.", "tip": "1 train from 23rd St to Chambers St. Book museum tickets online in advance."}, {"name": "The High Line", "category": "sightseeing", "subcategory": "mustdo", "starred": false, "address": "Gansevoort St to 34th St", "distance": "close", "distanceText": "5-15 min walk", "description": "Elevated park on old freight rail tracks. Art installations, Hudson views, gardens. 23rd St entrance is 5 min walk west.", "tip": "Multiple entrances along the west side"}, {"name": "Central Park", "category": "sightseeing", "subcategory": "mustdo", "starred": false, "address": "59th to 110th St", "distance": "medium", "distanceText": "15 min subway", "description": "Walk the southern end: Bethesda Fountain, Bow Bridge, Strawberry Fields. Rent a rowboat at the Loeb Boathouse lake.", "tip": "Subway to Columbus Circle entrance"}, {"name": "Top of the Rock", "category": "sightseeing", "subcategory": "mustdo", "starred": false, "address": "30 Rockefeller Plaza, Midtown", "distance": "medium", "distanceText": "15 min subway", "description": "Better views than Empire State Building because you can SEE the Empire State Building. Plus Central Park north. Go at sunset.", "tip": "Book online"}, {"name": "Brooklyn Bridge Walk", "category": "sightseeing", "subcategory": "mustdo", "starred": false, "address": "City Hall area (Manhattan side)", "distance": "far", "distanceText": "25 min subway", "description": "Walk across into DUMBO. Manhattan skyline views from Brooklyn are postcard-perfect. Get ice cream at Brooklyn Ice Cream Factory.", "tip": ""}, {"name": "The Vessel / Hudson Yards", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "20 Hudson Yards", "distance": "close", "distanceText": "10 min walk", "description": "Honeycomb-shaped structure — architecturally wild. The Shops at Hudson Yards are fancy if you want to browse.", "tip": ""}, {"name": "Grand Central Terminal", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "89 E 42nd St, Midtown", "distance": "medium", "distanceText": "15 min subway", "description": "Beaux-Arts masterpiece. Look up at the constellation ceiling. Try the Whispering Gallery — whisper at opposite corners.", "tip": "4/5/6 from 23rd St to Grand Central"}, {"name": "Little Island", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "Pier 55, W 13th St, Hudson River", "distance": "medium", "distanceText": "15 min walk", "description": "Park built on tulip-shaped pillars in the Hudson River. Free, beautiful gardens, great views. Opened 2021.", "tip": ""}, {"name": "Washington Square Park", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "Greenwich Village", "distance": "medium", "distanceText": "15 min walk", "description": "The arch, the fountain, the chess players, the performers — heartbeat of the Village. Great people-watching.", "tip": ""}, {"name": "Harry Potter Store", "category": "sightseeing", "subcategory": "unique", "starred": true, "address": "935 Broadway (corner of 22nd St)", "distance": "close", "distanceText": "2 min walk", "description": "Three floors of immersive magical retail. Butterbeer, wand fitting, the works. We visited during our July 2025 trip.", "tip": "Literally a 2-minute walk from the apartment!"}, {"name": "Flatiron Building", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "175 5th Ave (23rd & Broadway)", "distance": "close", "distanceText": "5 min walk", "description": "The iconic triangular building, recently restored. Walk by it every time you head east from the apartment.", "tip": ""}, {"name": "Chelsea Galleries", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "19th-28th St, west of 10th Ave", "distance": "close", "distanceText": "10 min walk", "description": "Largest concentration of art galleries in the world. Free to browse. Dozens of galleries showing contemporary art.", "tip": ""}, {"name": "The Lion King", "category": "broadway", "subcategory": "musical", "starred": true, "address": "Minskoff Theatre, 200 W 45th St", "distance": "medium", "distanceText": "20 min subway", "description": "The gold standard of Broadway spectacle. The puppetry, the music, the opening Circle of Life — breathtaking. Perfect for parents.", "tip": "F to 42nd St. Book on TodayTix or TKTS for discounted tickets."}, {"name": "Aladdin", "category": "broadway", "subcategory": "musical", "starred": true, "address": "New Amsterdam Theatre, 214 W 42nd St", "distance": "medium", "distanceText": "20 min subway", "description": "Pure fun. Genie steals the show. Colorful, energetic, crowd-pleasing. Great pick for something lighter and joyful.", "tip": ""}, {"name": "Wicked", "category": "broadway", "subcategory": "musical", "starred": false, "address": "Gershwin Theatre, 222 W 51st St", "distance": "medium", "distanceText": "20 min subway", "description": "The most iconic musical on Broadway. Story behind the Wizard of Oz — incredible sets, vocals, and Defying Gravity is unforgettable.", "tip": ""}, {"name": "Harry Potter and the Cursed Child", "category": "broadway", "subcategory": "musical", "starred": false, "address": "Lyric Theatre, 214 W 43rd St", "distance": "medium", "distanceText": "20 min subway", "description": "Mind-blowing stage magic and illusions. If you loved the Harry Potter Store, this is the ultimate continuation.", "tip": ""}, {"name": "Hadestown", "category": "broadway", "subcategory": "musical", "starred": false, "address": "Walter Kerr Theatre, 219 W 48th St", "distance": "medium", "distanceText": "20 min subway", "description": "Tony winner for Best Musical. Reimagined Greek myth in a jazz-infused underworld. More artsy but deeply moving.", "tip": ""}];
+const CAT_ICONS={"food":"🍽️","sightseeing":"🏙️","broadway":"🎭"};
+const SUB_ICONS={"bagels":"🥯","pizza":"🍕","indian":"🇮🇳","casual":"🍔","finedining":"✨","dessert":"🍰","mustdo":"⭐","unique":"💎","musical":"🎵"};
+const SUB_LABELS={"bagels":"Bagels & Breakfast","pizza":"Pizza","indian":"Indian","casual":"Casual","finedining":"Fine Dining","dessert":"Dessert & Coffee","mustdo":"Must-Do","unique":"Unique","musical":"Musicals"};
+const DIST_LABELS={"close":"🚶 Walking (<10 min)","medium":"🚇 Short Trip (10-20 min)","far":"🚗 Further Out (20+ min)"};
+let filters={cat:'all',sub:'all',dist:'all',stars:false};
+function renderPills(){
+const catRow=document.getElementById('catRow');
+catRow.innerHTML='<div class="pill'+(filters.cat==='all'?' active':'')+'" onclick="setCat(\'all\')">'+'All</div>';
+['food','sightseeing','broadway'].forEach(c=>{
+catRow.innerHTML+='<div class="pill'+(filters.cat===c?' active':'')+'" onclick="setCat(\''+c+'\')">'+'<span class="pill-icon">'+CAT_ICONS[c]+'</span>'+c[0].toUpperCase()+c.slice(1)+'</div>';
+});
+const subRow=document.getElementById('subRow');
+let subs=new Set();
+DATA.forEach(d=>{if(filters.cat==='all'||d.category===filters.cat)subs.add(d.subcategory)});
+if(subs.size>1){
+subRow.style.display='flex';
+subRow.innerHTML='<div class="pill'+(filters.sub==='all'?' active':'')+'" onclick="setSub(\'all\')">'+'All</div>';
+[...subs].forEach(s=>{
+subRow.innerHTML+='<div class="pill'+(filters.sub===s?' active':'')+'" onclick="setSub(\''+s+'\')">'+'<span class="pill-icon">'+(SUB_ICONS[s]||'')+'</span>'+(SUB_LABELS[s]||s)+'</div>';
+});
+}else{subRow.style.display='none';subRow.innerHTML='';}
+const distRow=document.getElementById('distRow');
+distRow.innerHTML='<div class="pill'+(filters.dist==='all'?' active':'')+'" onclick="setDist(\'all\')">'+'All Distances</div>';
+['close','medium','far'].forEach(d=>{
+distRow.innerHTML+='<div class="pill'+(filters.dist===d?' active':'')+'" onclick="setDist(\''+d+'\')">'+ DIST_LABELS[d]+'</div>';
+});
+}
+function getFiltered(){
+return DATA.filter(d=>{
+if(filters.cat!=='all'&&d.category!==filters.cat)return false;
+if(filters.sub!=='all'&&d.subcategory!==filters.sub)return false;
+if(filters.dist!=='all'&&d.distance!==filters.dist)return false;
+if(filters.stars&&!d.starred)return false;
+return true;
+});
+}
+function renderCards(){
+const cards=document.getElementById('cards');
+const items=getFiltered();
+document.getElementById('count').textContent=items.length+' spot'+(items.length!==1?'s':'')+' found';
+if(!items.length){
+cards.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No spots match your filters.<br>Try adjusting above!</div></div>';
+return;
+}
+cards.innerHTML=items.map((d,i)=>`
+<div class="card" onclick="this.classList.toggle('open')">
+<div class="card-top">
+<div class="card-icon">${CAT_ICONS[d.category]||'📍'}</div>
+<div class="card-info">
+<div class="card-name">${d.name}${d.starred?'<span class="star-badge">⭐ Vishal\'s Pick</span>':''}</div>
+<div class="card-addr">${d.address}</div>
+<div class="card-dist">📍 ${d.distanceText}</div>
+</div>
+<div class="card-chevron">▼</div>
+</div>
+<div class="card-desc">${d.description}</div>
+${d.tip?`<div class="card-tip">💡 ${d.tip}</div>`:''}
+</div>`).join('');
+}
+function setCat(c){filters.cat=c;filters.sub='all';renderPills();renderCards();}
+function setSub(s){filters.sub=s;renderPills();renderCards();}
+function setDist(d){filters.dist=d;renderPills();renderCards();}
+function toggleStars(){
+filters.stars=!filters.stars;
+document.getElementById('starToggle').classList.toggle('on',filters.stars);
+renderCards();
+}
+renderPills();renderCards();
+</script>
+</body>
+</html>
