@@ -62,6 +62,27 @@ SPOTS = [
     {"name":"Wicked","lat":40.7622,"lng":-73.9844,"category":"broadway","subcategory":"musical","starred":False,"address":"Gershwin Theatre, 222 W 51st St","distanceText":"20 min subway","description":"The most iconic musical on Broadway. Defying Gravity is unforgettable.","tip":""},
     {"name":"Harry Potter and the Cursed Child","lat":40.7572,"lng":-73.9873,"category":"broadway","subcategory":"musical","starred":False,"address":"Lyric Theatre, 214 W 43rd St","distanceText":"20 min subway","description":"Mind-blowing stage magic and illusions. If you loved the HP Store, this is the next level.","tip":""},
     {"name":"Hadestown","lat":40.7601,"lng":-73.9870,"category":"broadway","subcategory":"musical","starred":False,"address":"Walter Kerr Theatre, 219 W 48th St","distanceText":"20 min subway","description":"Tony winner for Best Musical. Jazz-infused reimagined Greek myth. Deeply moving.","tip":""},
+    # DC Cherry Blossoms
+    {"name":"Tidal Basin","lat":38.8863,"lng":-77.0365,"category":"cherry-blossoms","subcategory":"viewing","starred":True,"address":"1501 Maine Ave SW, Washington DC","distanceText":"Near National Mall","description":"THE iconic cherry blossom spot. 3,000+ trees ringing the basin. Arrive by 7-8 AM to beat crowds. Peak bloom projected March 29-April 1.","tip":"Wear comfortable shoes — full loop is ~2 miles"},
+    {"name":"East Potomac Park","lat":38.8723,"lng":-77.0289,"category":"cherry-blossoms","subcategory":"viewing","starred":True,"address":"Ohio Dr SW, Washington DC","distanceText":"South of Tidal Basin","description":"Less crowded alternative with 1,800+ cherry trees. Different varieties bloom earlier and later. Walking/biking path along Potomac is gorgeous.","tip":"Walk south from Tidal Basin"},
+    {"name":"National Mall","lat":38.8899,"lng":-77.0229,"category":"cherry-blossoms","subcategory":"viewing","starred":False,"address":"National Mall, Washington DC","distanceText":"Central DC","description":"Cherry trees scattered throughout. Combine blossom viewing with monuments and museums — perfect for a full day.","tip":"Start at Capitol, walk west toward Lincoln Memorial"},
+    {"name":"Dumbarton Oaks","lat":38.9146,"lng":-77.0629,"category":"cherry-blossoms","subcategory":"viewing","starred":False,"address":"1703 32nd St NW, Georgetown","distanceText":"Georgetown","description":"Beautiful private garden in Georgetown. Smaller, quieter, more curated. Cherry blossoms plus wisteria and spring blooms.","tip":"Open Tue-Sun 2-6 PM. $10 admission."},
+    # DC Sightseeing
+    {"name":"Lincoln Memorial","lat":38.8893,"lng":-77.0502,"category":"sightseeing","subcategory":"monuments","starred":True,"address":"2 Lincoln Memorial Cir NW, Washington DC","distanceText":"National Mall (west end)","description":"One of America's most powerful monuments. Go at sunrise or late evening — dramatically lit and almost empty.","tip":"Combine with nearby WWII, Korean War, and MLK memorials"},
+    {"name":"WWII Memorial","lat":38.8894,"lng":-77.0405,"category":"sightseeing","subcategory":"monuments","starred":False,"address":"1750 Independence Ave SW, Washington DC","distanceText":"National Mall","description":"Beautiful open-air memorial. 56 pillars representing states and territories. Visit at night when it's lit up.","tip":"Open 24 hours"},
+    {"name":"MLK Memorial","lat":38.8862,"lng":-77.0442,"category":"sightseeing","subcategory":"monuments","starred":False,"address":"1964 Independence Ave SW, Washington DC","distanceText":"Near Tidal Basin","description":"30-foot Stone of Hope sculpture. Located along Tidal Basin — combine with cherry blossom viewing.","tip":"Right next to Tidal Basin"},
+    {"name":"Smithsonian Natural History","lat":38.8913,"lng":-77.0261,"category":"sightseeing","subcategory":"museums","starred":True,"address":"10th St & Constitution Ave NW, Washington DC","distanceText":"National Mall","description":"One of world's greatest museums — FREE. Hope Diamond, dinosaur hall, ocean exhibit. Could spend all day.","tip":"Free admission, open 10 AM-5:30 PM"},
+    {"name":"Smithsonian Air & Space","lat":38.8882,"lng":-77.0199,"category":"sightseeing","subcategory":"museums","starred":True,"address":"600 Independence Ave SW, Washington DC","distanceText":"National Mall","description":"Wright Brothers Flyer, Apollo 11, Spirit of St. Louis. Recently renovated with stunning new exhibits. Free!","tip":"Free. Planetarium shows worth the extra fee."},
+    {"name":"U.S. Capitol","lat":38.8897,"lng":-77.0089,"category":"sightseeing","subcategory":"monuments","starred":False,"address":"East Capitol St NE & First St SE, Washington DC","distanceText":"Capitol Hill","description":"The iconic dome. Free guided tours — book online. View west down the Mall from Capitol steps is the classic DC panorama.","tip":"Book free tour at visitthecapitol.gov"},
+    {"name":"Library of Congress","lat":38.8887,"lng":-77.0047,"category":"sightseeing","subcategory":"museums","starred":False,"address":"101 Independence Ave SE, Washington DC","distanceText":"Capitol Hill","description":"Largest library in the world. Main Reading Room is breathtaking — ornate ceiling, three stories of books. Free and less crowded.","tip":"Free. Open Mon-Sat."},
+    # DC Food
+    {"name":"Rasika","lat":38.8965,"lng":-77.0194,"category":"food","subcategory":"indian","starred":True,"address":"633 D St NW, Washington DC","distanceText":"Penn Quarter, DC","description":"One of the best Indian restaurants in America. The palak chaat (crispy spinach) is legendary. Obama's favorite Indian restaurant in DC.","tip":"Reserve well in advance — books up fast"},
+    {"name":"Bombay Street Food","lat":39.0826,"lng":-77.1536,"category":"food","subcategory":"indian","starred":True,"address":"4704 Dempsey St, Rockville, MD","distanceText":"30 min from DC","description":"Excellent chaat, pav bhaji, vada pav — authentic Bombay street food. Casual, affordable, great vegetarian options.","tip":"Casual counter-service. Everything is veg-friendly."},
+    {"name":"Pappe","lat":38.9094,"lng":-77.0478,"category":"food","subcategory":"indian","starred":False,"address":"1367 Connecticut Ave NW, Washington DC","distanceText":"Dupont Circle, DC","description":"Modern Indian small plates in Dupont Circle. Inventive cocktails, lively atmosphere. Lamb seekh kebab and butter chicken are standouts.","tip":"Good for dinner after a day on the Mall"},
+    {"name":"Woodlands","lat":38.9918,"lng":-76.9817,"category":"food","subcategory":"indian","starred":False,"address":"8046 New Hampshire Ave, Langley Park, MD","distanceText":"20 min from DC","description":"Authentic South Indian vegetarian. Dosas, idli, uttapam — the real deal. Pure vegetarian, Jain-friendly options available.","tip":"All vegetarian. Ask for Jain-friendly (no onion/garlic)."},
+    {"name":"Heritage India","lat":38.9202,"lng":-77.0713,"category":"food","subcategory":"indian","starred":False,"address":"2400 Wisconsin Ave NW, Washington DC","distanceText":"Georgetown, DC","description":"Upscale Indian in Georgetown. Good vegetarian selection. Near Dumbarton Oaks — combine with cherry blossom garden visit.","tip":"Near Dumbarton Oaks"},
+    # Gainesville VA
+    {"name":"VOSAP Event","lat":38.7957,"lng":-77.6131,"category":"sightseeing","subcategory":"events","starred":True,"address":"Gainesville, VA","distanceText":"50 min from DC","description":"Voice of SAP event. Friday Mar 27 evening and Saturday Mar 28 from 3 PM onwards.","tip":"~50 min drive from DC. Plan cherry blossoms for morning before VOSAP at 3 PM."},
 ]
 
 # Default center: apartment near Curry Hill/NoMad
@@ -83,7 +104,7 @@ def build_system_prompt(user_lat=None, user_lng=None):
         for s in SPOTS
     ])
     
-    return f"""You are a warm, knowledgeable family friend helping Vishal's parents explore NYC. Think of yourself as their local guide — someone who knows the city and knows their son's favorite spots.
+    return f"""You are a warm, knowledgeable travel concierge helping Vishal's parents (Jayana & Naresh Shah) during their 12-day East Coast trip. Think of yourself as a local friend who knows NYC and DC inside and out — AND who knows their son's personal favorite spots.
 
 YOUR STYLE:
 - Talk like a friendly person, not a database. "Oh, you're near the Village? You HAVE to try Joe's Pizza — Vishal loves it" is way better than "Joe's Pizza is located at 7 Carmine St."
@@ -91,19 +112,37 @@ YOUR STYLE:
 - Give practical advice: "It's a 10 minute walk from your apartment" or "Take the F train, it's quick"
 - If they seem hungry, suggest 2-3 options with different vibes (quick bite vs sit-down, familiar vs adventurous)
 - Be concise but warm. 2-4 sentences per recommendation, 2-3 recommendations max per response.
-- If they ask about something not on the list, be honest ("That's not one of Vishal's picks, but here's what's nearby that he does recommend...")
+
+HOW TO HANDLE REQUESTS:
+1. FIRST check if Vishal's curated list has relevant spots. If yes, recommend those with a "Vishal recommends" callout.
+2. If the list doesn't cover what they need, USE YOUR OWN KNOWLEDGE to help.
+3. When recommending from general knowledge, clearly label it: "This isn't on Vishal's list, but a great option nearby is..."
+4. You can mix: "Vishal's pick would be X, but if you want something different, Y is also great nearby."
+5. For non-food questions (subway help, safety tips, weather, pharmacy, ATM, trains, etc.), just answer helpfully like any good local would.
+
+TRIP OVERVIEW:
+- Mar 20-24: NYC (home base: 101 W 24th St, Apt 24D, Chelsea/Flatiron)
+- Mar 25: NJ — Swaminarayan (BAPS) temple visit
+- Mar 26: Warren, NJ — Teji's house, Siddhachalam & Shrimad Rajchandra temples (rent a car)
+- Mar 27: Train from Newark to DC — VOSAP event in Gainesville, VA (evening)
+- Mar 28: Cherry blossoms (morning) + VOSAP from 3 PM
+- Mar 29: Cherry blossoms (PEAK BLOOM projected Mar 29 - Apr 1!)
+- Mar 30: Travel back to NJ
+- Mar 31: Fly home EWR → LAX
 
 CONTEXT:
-- The family is Indian, vegetarian-friendly options are always appreciated (especially HanGawi — fully vegan Korean, Jain-friendly with no onion/garlic)
-- Home base apartment is at 101 W 24th St, Chelsea/Flatiron/NoMad area
+- The family is Indian vegetarian. Vegetarian and vegan-friendly options are always appreciated
+- HanGawi is fully vegan Korean, Jain-friendly (no onion, no garlic) — perfect for them
 - GupShup and Bungalow are sister restaurants from Chef Vikas Khanna's team
-- Curry Hill (Lexington Ave, 26th-30th St) is a 5-10 min walk east from the apartment — great for familiar Indian food
-- Broadway theaters are all clustered in Midtown, about 20 min subway ride from the apartment
-- For Broadway, TKTS booth in Times Square has same-day discounted tickets
-- Indian Accent is one of the most celebrated Indian restaurants in the world — Vishal went to the Mumbai location
+- Curry Hill (Lex Ave, 26th-30th St) is a 5-10 min walk from the NYC apartment — great for familiar Indian food
+- Rasika in DC is one of the best Indian restaurants in America — Obama's favorite
+- For the NJ→DC leg: Amtrak Northeast Regional from Newark Penn to DC Union Station, ~3 hours, $50-90
+- Cherry blossoms: Tidal Basin is THE iconic spot (go early AM), East Potomac Park is less crowded
+- Gainesville, VA is ~50 min drive from DC
+- They may ask about anything: restaurants, sightseeing, transit, cherry blossoms, temples, logistics. Help with ALL of it.
 {location_context}
 
-VISHAL'S CURATED NYC SPOTS:
+VISHAL'S CURATED SPOTS:
 {spots_text}"""
 
 
@@ -140,10 +179,25 @@ def chat():
     if len(message) > 500:
         return jsonify({"error": "Message too long. Keep it under 500 characters."}), 400
     
+    # Accept conversation history from frontend (last 20 messages max)
+    history = data.get("history", [])
+    if not isinstance(history, list):
+        history = []
+    history = history[-20:]  # Cap at 20 messages to control token usage
+    
     user_lat = data.get("lat")
     user_lng = data.get("lng")
     
     system_prompt = build_system_prompt(user_lat, user_lng)
+    
+    # Build messages array: system + history + current message
+    messages = [{"role": "system", "content": system_prompt}]
+    for h in history:
+        role = h.get("role", "")
+        content = h.get("content", "")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content[:500]})
+    messages.append({"role": "user", "content": message})
     
     try:
         resp = requests.post(
@@ -154,10 +208,7 @@ def chat():
             },
             json={
                 "model": "gpt-4o",
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": message},
-                ],
+                "messages": messages,
                 "max_tokens": 500,
                 "temperature": 0.7,
             },

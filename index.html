@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Shah Family NYC Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Shah Family Trip Guide</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -11,65 +12,137 @@
 --accent:#C8622D;--accent-light:#F4E8DB;--gold:#D4A843;--gold-bg:#FFF8E7;
 --border:#E8DED0;--shadow:0 2px 12px rgba(45,32,19,0.08);
 --radius:12px;--radius-sm:8px;--radius-pill:50px;
+--cherry:#D9328A;--cherry-light:#FCE8F2;
+--sight:#4A7FBF;--sight-light:#E3EDF7;
+--bway:#8B5DA8;--bway-light:#F0E6F6;
 }
 @media(prefers-color-scheme:dark){:root{
 --bg:#1A1510;--surface:#252017;--text:#F0E6D8;--muted:#9B8B75;
 --accent:#E07A3A;--accent-light:#3A2A1A;--gold:#E0B850;--gold-bg:#2A2310;
 --border:#3A3225;--shadow:0 2px 12px rgba(0,0,0,0.3);
+--cherry:#E84B9A;--cherry-light:#3A1A2A;
+--sight:#5B9BD5;--sight-light:#1A2A3A;
+--bway:#A070C0;--bway-light:#2A1A3A;
 }}
 body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased}
-.header{background:linear-gradient(135deg,#C8622D,#D4A843);color:#fff;padding:32px 16px 24px;text-align:center}
-.header h1{font-size:1.75rem;font-weight:700;margin-bottom:4px}
-.header .sub{font-size:0.9rem;opacity:0.9}
-.header .addr{font-size:0.8rem;opacity:0.75;margin-top:6px}
-.filters{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:12px 16px 8px;overflow:visible}
+.header{background:linear-gradient(135deg,#C8622D,#D4A843);color:#fff;padding:32px 16px 20px;text-align:center}
+.header h1{font-size:1.6rem;font-weight:700;margin-bottom:2px}
+.header .sub{font-size:0.88rem;opacity:0.92}
+.header .addr{font-size:0.78rem;opacity:0.75;margin-top:4px}
+
+/* Filters */
+.filters{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px 6px}
 .filter-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .filter-row::-webkit-scrollbar{display:none}
-.pill{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:var(--radius-pill);border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.82rem;font-weight:500;white-space:nowrap;cursor:pointer;transition:all 0.15s ease;min-height:36px;user-select:none;-webkit-tap-highlight-color:transparent}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:var(--radius-pill);border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.82rem;font-weight:500;white-space:nowrap;cursor:pointer;transition:all .15s;min-height:34px;user-select:none;-webkit-tap-highlight-color:transparent}
 .pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pill.cherry-active{background:var(--cherry);color:#fff;border-color:var(--cherry)}
 .pill:hover{border-color:var(--accent)}
 .pill-icon{font-size:1rem}
-.toggle-row{display:flex;align-items:center;gap:8px;padding:8px 0 4px}
-.toggle{position:relative;width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;transition:background 0.2s;flex-shrink:0}
+.toggle-row{display:flex;align-items:center;gap:8px;padding:6px 0 2px}
+.toggle{position:relative;width:42px;height:22px;background:var(--border);border-radius:11px;cursor:pointer;transition:background .2s;flex-shrink:0}
 .toggle.on{background:var(--gold)}
-.toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform 0.2s}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s}
 .toggle.on::after{transform:translateX(20px)}
 .toggle-label{font-size:0.82rem;color:var(--muted);font-weight:500}
-.count{font-size:0.8rem;color:var(--muted);padding:4px 0 8px;text-align:center}
-.cards{padding:12px 16px 100px;display:flex;flex-direction:column;gap:12px;max-width:640px;margin:0 auto}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);cursor:pointer;transition:all 0.15s ease;-webkit-tap-highlight-color:transparent}
+.count{font-size:0.8rem;color:var(--muted);padding:4px 0 6px;text-align:center}
+
+/* Cards */
+.cards{padding:10px 16px 80px;display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
 .card:active{transform:scale(0.98)}
 .card-top{display:flex;align-items:flex-start;gap:10px}
-.card-icon{font-size:1.5rem;flex-shrink:0;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--accent-light);border-radius:var(--radius-sm)}
+.card-icon{font-size:1.4rem;flex-shrink:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:var(--accent-light);border-radius:var(--radius-sm)}
+.card-icon.cherry-bg{background:var(--cherry-light)}
+.card-icon.sight-bg{background:var(--sight-light)}
+.card-icon.bway-bg{background:var(--bway-light)}
 .card-info{flex:1;min-width:0}
-.card-name{font-size:1rem;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.star-badge{display:inline-flex;align-items:center;gap:3px;background:var(--gold-bg);color:var(--gold);font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:var(--radius-pill);white-space:nowrap;border:1px solid var(--gold)}
-.card-addr{font-size:0.82rem;color:var(--muted);margin-top:2px}
-.card-dist{display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:var(--accent);font-weight:500;margin-top:4px;background:var(--accent-light);padding:2px 8px;border-radius:var(--radius-pill)}
-.card-desc{font-size:0.88rem;color:var(--text);margin-top:10px;line-height:1.55;display:none;opacity:0;transition:opacity 0.2s}
+.card-name{font-size:0.95rem;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.star-badge{display:inline-flex;align-items:center;gap:3px;background:var(--gold-bg);color:var(--gold);font-size:0.68rem;font-weight:600;padding:2px 7px;border-radius:var(--radius-pill);white-space:nowrap;border:1px solid var(--gold)}
+.region-badge{display:inline-flex;align-items:center;font-size:0.68rem;font-weight:600;padding:2px 7px;border-radius:var(--radius-pill);white-space:nowrap}
+.region-badge.nyc{background:#E3EDF7;color:#4A7FBF;border:1px solid #4A7FBF}
+.region-badge.dc{background:var(--cherry-light);color:var(--cherry);border:1px solid var(--cherry)}
+@media(prefers-color-scheme:dark){
+.region-badge.nyc{background:var(--sight-light);color:var(--sight)}
+.region-badge.dc{background:var(--cherry-light);color:var(--cherry)}
+}
+.card-addr{font-size:0.8rem;color:var(--muted);margin-top:2px}
+.card-dist{display:inline-flex;align-items:center;gap:4px;font-size:0.73rem;color:var(--accent);font-weight:500;margin-top:3px;background:var(--accent-light);padding:2px 8px;border-radius:var(--radius-pill)}
+.card-desc{font-size:0.86rem;color:var(--text);margin-top:8px;line-height:1.55;display:none;opacity:0;transition:opacity .2s}
 .card.open .card-desc{display:block;opacity:1}
-.card-tip{font-size:0.82rem;color:var(--accent);margin-top:8px;padding:8px 12px;background:var(--accent-light);border-radius:var(--radius-sm);display:none}
+.card-tip{font-size:0.8rem;color:var(--accent);margin-top:6px;padding:6px 10px;background:var(--accent-light);border-radius:var(--radius-sm);display:none}
 .card.open .card-tip{display:block}
-.card-chevron{color:var(--muted);font-size:0.8rem;transition:transform 0.2s;flex-shrink:0;margin-top:2px}
+.card-chevron{color:var(--muted);font-size:0.8rem;transition:transform .2s;flex-shrink:0;margin-top:2px}
 .card.open .card-chevron{transform:rotate(180deg)}
-.footer{text-align:center;padding:24px 16px;font-size:0.8rem;color:var(--muted)}
 .empty{text-align:center;padding:48px 16px;color:var(--muted)}
 .empty-icon{font-size:2.5rem;margin-bottom:12px}
-.empty-text{font-size:0.95rem}
+
+/* Bottom Nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;font-size:0.68rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;-webkit-tap-highlight-color:transparent;transition:color .15s}
+.nav-btn.active{color:var(--accent)}
+.nav-icon{font-size:1.3rem}
+
+/* Tab content */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Map */
+#mapContainer{height:calc(100vh - 170px);width:100%;z-index:1}
+.map-header{padding:10px 16px;display:flex;gap:8px;overflow-x:auto;background:var(--bg);border-bottom:1px solid var(--border)}
+.map-legend{display:flex;gap:12px;padding:8px 16px;flex-wrap:wrap;background:var(--bg)}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--muted)}
+.legend-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
+
+/* Itinerary */
+.itin-wrap{padding:16px 16px 80px;max-width:640px;margin:0 auto}
+.itin-intro{font-size:0.85rem;color:var(--muted);text-align:center;margin-bottom:16px;padding:0 8px}
+.itin-timeline{position:relative;padding-left:36px}
+.itin-timeline::before{content:'';position:absolute;left:14px;top:8px;bottom:8px;width:2px;background:var(--border)}
+.itin-day{position:relative;margin-bottom:14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.itin-dot{position:absolute;left:-22px;top:14px;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2.5px solid var(--bg);z-index:1}
+.itin-day.cherry .itin-dot{background:var(--cherry)}
+.itin-day.travel .itin-dot{background:var(--gold)}
+.itin-day.temple .itin-dot{background:#2EAD6B}
+.itin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow)}
+.itin-card:active{transform:scale(0.98);transition:transform .1s}
+.itin-date{font-size:0.72rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.5px}
+.itin-day.cherry .itin-date{color:var(--cherry)}
+.itin-day.travel .itin-date{color:var(--gold)}
+.itin-day.temple .itin-date{color:#2EAD6B}
+.itin-title{font-size:0.95rem;font-weight:600;margin-top:2px;display:flex;align-items:center;gap:6px}
+.itin-summary{font-size:0.82rem;color:var(--muted);margin-top:2px}
+.itin-details{display:none;margin-top:10px;font-size:0.84rem;line-height:1.6;color:var(--text)}
+.itin-day.open .itin-details{display:block}
+.itin-chevron{float:right;color:var(--muted);font-size:0.75rem;transition:transform .2s;margin-top:2px}
+.itin-day.open .itin-chevron{transform:rotate(180deg)}
+.itin-info{background:var(--accent-light);border-radius:var(--radius-sm);padding:10px 12px;margin-top:8px;font-size:0.82rem;line-height:1.55}
+.itin-info.train{background:var(--gold-bg);border:1px solid var(--gold)}
+.itin-info.cherry-info{background:var(--cherry-light);border:1px solid var(--cherry)}
+.itin-info strong{font-weight:600}
+.itin-places{margin-top:8px}
+.itin-place-link{display:inline-block;padding:3px 10px;margin:3px 4px 3px 0;font-size:0.78rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-pill);color:var(--accent);text-decoration:none;font-weight:500}
+
 @media(min-width:640px){
-.header h1{font-size:2.25rem}
-.cards{padding:16px 24px 100px}
-.filters{padding:12px 24px 8px}
+.header h1{font-size:2rem}
+.cards{padding:14px 24px 80px}
+.filters{padding:10px 24px 6px}
+.itin-wrap{padding:20px 24px 80px}
 }
 </style>
 </head>
 <body>
+
 <div class="header">
-<h1>Shah Family NYC Guide 🗽</h1>
-<div class="sub">Curated by Vishal • March 2026</div>
-<div class="addr">🏠 Home base: 101 W 24th St, Chelsea/Flatiron</div>
+<h1>Shah Family Trip Guide ✈️</h1>
+<div class="sub">NYC 🗽 • DC 🌸 • March 2026</div>
+<div class="addr">🏠 NYC Home: 101 W 24th St, Chelsea/Flatiron</div>
 </div>
+
+<!-- PLACES TAB -->
+<div class="tab-content active" id="tabPlaces">
 <div class="filters" id="filters">
+<div class="filter-row" id="regionRow"></div>
 <div class="filter-row" id="catRow"></div>
 <div class="filter-row" id="subRow"></div>
 <div class="filter-row" id="distRow"></div>
@@ -80,45 +153,171 @@ body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--
 </div>
 <div class="count" id="count"></div>
 <div class="cards" id="cards"></div>
-<div class="footer">Made with ❤️ by DootDoot ⚡ for the Shah Family</div>
+</div>
+
+<!-- MAP TAB -->
+<div class="tab-content" id="tabMap">
+<div class="map-header" id="mapRegionRow"></div>
+<div class="map-legend" id="mapLegend"></div>
+<div id="mapContainer"></div>
+</div>
+
+<!-- ITINERARY TAB -->
+<div class="tab-content" id="tabItinerary">
+<div class="itin-wrap" id="itinerary"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+<div class="nav-btn active" onclick="switchTab('places')" id="navPlaces">
+<span class="nav-icon">🍽️</span>Places
+</div>
+<div class="nav-btn" onclick="switchTab('map')" id="navMap">
+<span class="nav-icon">🗺️</span>Map
+</div>
+<div class="nav-btn" onclick="switchTab('itinerary')" id="navItin">
+<span class="nav-icon">📅</span>Itinerary
+</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const DATA=[{"name": "Tompkins Square Bagels", "category": "food", "subcategory": "bagels", "starred": true, "address": "165 Avenue A, East Village", "distance": "far", "distanceText": "25 min subway", "description": "The best bagels in the city, period. Hand-rolled, kettle-boiled, perfect chew. Get there early. Try the everything bagel with scallion cream cheese.", "tip": "F from 23rd St to 2nd Ave, or 10 min Uber"}, {"name": "Ess-A-Bagel", "category": "food", "subcategory": "bagels", "starred": true, "address": "831 3rd Ave, Midtown East", "distance": "medium", "distanceText": "20 min subway", "description": "Classic NYC bagel institution. Massive bagels, generous spreads. The hand-rolled bagels are legitimately huge.", "tip": "6 from 23rd St to 51st St"}, {"name": "Modern Bread and Bagel", "category": "food", "subcategory": "bagels", "starred": true, "address": "472 Columbus Ave, UWS (also 25 W 28th St)", "distance": "close", "distanceText": "5 min walk (28th St location)", "description": "Gluten-free and allergy-friendly bakery. Great bagels, sandwiches, and pastries. The 28th St location is walking distance!", "tip": "The 28th St location is a 5-minute walk from the apartment!"}, {"name": "Russ & Daughters", "category": "food", "subcategory": "bagels", "starred": false, "address": "179 E Houston St, Lower East Side", "distance": "medium", "distanceText": "20 min subway", "description": "Iconic NYC appetizing shop since 1914. Lox, bagels, whitefish — the Jewish deli experience at its finest.", "tip": ""}, {"name": "Clinton St. Baking Company", "category": "food", "subcategory": "bagels", "starred": false, "address": "4 Clinton St, Lower East Side", "distance": "medium", "distanceText": "20 min subway", "description": "Famous for their pancakes and brunch. The blueberry pancakes are legendary. Expect a wait on weekends.", "tip": ""}, {"name": "Joe's Pizza", "category": "food", "subcategory": "pizza", "starred": true, "address": "7 Carmine St, Greenwich Village", "distance": "medium", "distanceText": "15 min walk", "description": "THE classic NYC slice. No frills, no gimmicks — just a perfect New York cheese slice. Grab a slice, fold it in half, eat it standing on the sidewalk.", "tip": ""}, {"name": "Chelsea Market", "category": "food", "subcategory": "casual", "starred": false, "address": "75 9th Ave, Chelsea", "distance": "close", "distanceText": "10 min walk", "description": "Food hall in a converted Nabisco factory. Great for wandering and grazing. Los Tacos No. 1, Lobster Place, Dizengoff. Perfect rainy-day option.", "tip": ""}, {"name": "Prince Street Pizza", "category": "food", "subcategory": "pizza", "starred": false, "address": "27 Prince St, Nolita", "distance": "medium", "distanceText": "20 min subway", "description": "Famous for their pepperoni square (the 'Soho Square') — thick Sicilian-style with crispy cup pepperoni.", "tip": ""}, {"name": "Xi'an Famous Foods", "category": "food", "subcategory": "casual", "starred": false, "address": "34 W 14th St", "distance": "close", "distanceText": "10 min walk", "description": "Hand-pulled noodles, spicy cumin lamb — real NYC cheap-eats experience. The liang pi cold skin noodles are incredible.", "tip": ""}, {"name": "Katz's Delicatessen", "category": "food", "subcategory": "casual", "starred": false, "address": "205 E Houston St, Lower East Side", "distance": "medium", "distanceText": "20 min subway", "description": "The most famous deli in America since 1888. Get the pastrami on rye — it's life-changing. 'I'll have what she's having' from When Harry Met Sally.", "tip": ""}, {"name": "L'Industrie Pizzeria", "category": "food", "subcategory": "pizza", "starred": true, "address": "254 S 2nd St, Williamsburg (Brooklyn)", "distance": "far", "distanceText": "30 min subway", "description": "Arguably the best pizza in NYC right now. Thin, crispy, fresh burrata on top. Worth the trip to Brooklyn.", "tip": "L train to Bedford Ave"}, {"name": "Rubirosa", "category": "food", "subcategory": "pizza", "starred": true, "address": "235 Mulberry St, Nolita", "distance": "medium", "distanceText": "20 min subway", "description": "Thin-crust Italian-American. The vodka pizza is legendary. We've been here multiple times. The tie-dye vodka pie is a must-order.", "tip": "F to Broadway-Lafayette. Make a reservation on Resy."}, {"name": "Carbone", "category": "food", "subcategory": "finedining", "starred": false, "address": "181 Thompson St, Greenwich Village", "distance": "medium", "distanceText": "15 min walk", "description": "Italian-American fine dining with retro vibes. The spicy rigatoni vodka is famous. Expensive but a real experience.", "tip": "Hard to get a reservation — try Resy at midnight"}, {"name": "Via Carota", "category": "food", "subcategory": "finedining", "starred": false, "address": "51 Grove St, West Village", "distance": "medium", "distanceText": "15 min walk", "description": "Rustic Italian — seasonal, simple, perfect. The carciofi fried artichokes are legendary. Walk-ins only, go early (5:30 PM).", "tip": ""}, {"name": "The Smith", "category": "food", "subcategory": "casual", "starred": false, "address": "1900 Broadway, Union Square", "distance": "close", "distanceText": "10 min walk", "description": "Solid American bistro — great for a comfortable dinner without the fuss. Good cocktails, reliable food.", "tip": "Union Square location is closest"}, {"name": "Masala Times", "category": "food", "subcategory": "indian", "starred": true, "address": "194 Bleecker St, Greenwich Village", "distance": "medium", "distanceText": "15 min walk", "description": "Good Indian food in the Village. Solid for when you want something familiar and comforting.", "tip": ""}, {"name": "Adda Indian Canteen", "category": "food", "subcategory": "indian", "starred": false, "address": "31-31 Thomson Ave, Long Island City, Queens", "distance": "far", "distanceText": "25 min subway", "description": "One of the best Indian restaurants in the city — Michelin-recognized. Worth the trip to Queens. The biryani and kebabs are outstanding.", "tip": "7 train from 34th St-Hudson Yards"}, {"name": "Dhamaka", "category": "food", "subcategory": "indian", "starred": false, "address": "119 1st Ave, East Village", "distance": "far", "distanceText": "25 min subway", "description": "Regional Indian food you can't find anywhere else. Michelin Bib Gourmand. The offal dishes and regional specialties are incredible.", "tip": ""}, {"name": "Indian Accent", "category": "food", "subcategory": "indian", "starred": true, "address": "123 W 56th St, Midtown", "distance": "far", "distanceText": "25 min subway", "description": "One of the most celebrated Indian restaurants in the world — Manish Mehrotra's NYC outpost. The tasting menu reimagines Indian food.", "tip": "F to 57th St"}, {"name": "Tamarind Tribeca", "category": "food", "subcategory": "indian", "starred": false, "address": "99 Hudson St, Tribeca", "distance": "medium", "distanceText": "20 min subway", "description": "Upscale Indian — beautiful space, refined food. The lamb chops and tandoori dishes are excellent.", "tip": ""}, {"name": "HanGawi", "category": "food", "subcategory": "indian", "starred": true, "address": "12 E 32nd St, Koreatown", "distance": "close", "distanceText": "10 min walk", "description": "Fully vegan Korean — Jain-friendly (no onion, no garlic). Shoes off at the door, low tables. Beautiful, meditative, incredible food.", "tip": ""}, {"name": "Bungalow", "category": "food", "subcategory": "indian", "starred": false, "address": "24 First Ave, East Village", "distance": "far", "distanceText": "25 min subway", "description": "Chef Vikas Khanna's Michelin-starred flagship. Condé Nast's best new restaurants in the world. A journey through India's 28 states.", "tip": "F to 2nd Ave. Sun-Wed 5-10:30 PM, Thu-Sat 5-11 PM. Reserve ahead!"}, {"name": "GupShup", "category": "food", "subcategory": "indian", "starred": true, "address": "105 Lexington Ave, Gramercy/Curry Hill", "distance": "close", "distanceText": "10 min walk", "description": "Bungalow's sister restaurant — same team, more casual. Modern Indian street food and cocktails. Vibrant and fun.", "tip": "Right in Curry Hill, easy walk from the apartment"}, {"name": "Baar Baar", "category": "food", "subcategory": "indian", "starred": true, "address": "22 E 1st St, East Village", "distance": "medium", "distanceText": "20 min subway", "description": "Modern Indian — stylish space, creative cocktails, elevated takes on Indian classics. Great small plates for sharing.", "tip": ""}, {"name": "The Kati Roll Company", "category": "food", "subcategory": "indian", "starred": true, "address": "99 MacDougal St, Village (also 39 W 46th St)", "distance": "medium", "distanceText": "15 min walk (MacDougal)", "description": "Kolkata-style kati rolls — basically Indian burritos. Cheap, fast, delicious. Midtown location near Broadway theaters.", "tip": "Two locations: MacDougal St (15 min walk) or 46th St near Times Square"}, {"name": "Curry Hill", "category": "food", "subcategory": "indian", "starred": false, "address": "Lexington Ave, 26th-30th St", "distance": "close", "distanceText": "5-10 min walk", "description": "A strip of Indian restaurants — Patiala, Dhaba, Chennai Garden, Tiffin Wallah. Not fancy, but convenient, authentic, and affordable.", "tip": "5-10 minute walk east from the apartment"}, {"name": "Levain Bakery", "category": "food", "subcategory": "dessert", "starred": false, "address": "167 W 74th St, Upper West Side", "distance": "medium", "distanceText": "20 min subway", "description": "Massive, gooey, underbaked cookies — the chocolate chip walnut is iconic. One cookie is big enough to split.", "tip": ""}, {"name": "Magnolia Bakery", "category": "food", "subcategory": "dessert", "starred": false, "address": "401 Bleecker St, West Village", "distance": "medium", "distanceText": "15 min walk", "description": "Classic cupcakes and banana pudding. The banana pudding is actually the move here. Old-school vibes.", "tip": ""}, {"name": "Dominique Ansel Bakery", "category": "food", "subcategory": "dessert", "starred": false, "address": "189 Spring St, Soho", "distance": "medium", "distanceText": "20 min subway", "description": "Inventor of the Cronut. Beyond that gimmick, the pastries are world-class. The DKA (Kouign Amann) is incredible.", "tip": ""}, {"name": "Joe Coffee", "category": "food", "subcategory": "dessert", "starred": false, "address": "131 W 21st St", "distance": "close", "distanceText": "3 min walk", "description": "One of the best local coffee chains in NYC. Practically at your doorstep. Great espresso.", "tip": ""}, {"name": "9/11 Memorial & Museum", "category": "sightseeing", "subcategory": "mustdo", "starred": true, "address": "180 Greenwich St, Financial District", "distance": "medium", "distanceText": "20 min subway", "description": "Two massive waterfalls in the footprints of the Twin Towers. The museum below is intense but powerful. Give it 2-3 hours.", "tip": "1 train from 23rd St to Chambers St. Book museum tickets online in advance."}, {"name": "The High Line", "category": "sightseeing", "subcategory": "mustdo", "starred": false, "address": "Gansevoort St to 34th St", "distance": "close", "distanceText": "5-15 min walk", "description": "Elevated park on old freight rail tracks. Art installations, Hudson views, gardens. 23rd St entrance is 5 min walk west.", "tip": "Multiple entrances along the west side"}, {"name": "Central Park", "category": "sightseeing", "subcategory": "mustdo", "starred": false, "address": "59th to 110th St", "distance": "medium", "distanceText": "15 min subway", "description": "Walk the southern end: Bethesda Fountain, Bow Bridge, Strawberry Fields. Rent a rowboat at the Loeb Boathouse lake.", "tip": "Subway to Columbus Circle entrance"}, {"name": "Top of the Rock", "category": "sightseeing", "subcategory": "mustdo", "starred": false, "address": "30 Rockefeller Plaza, Midtown", "distance": "medium", "distanceText": "15 min subway", "description": "Better views than Empire State Building because you can SEE the Empire State Building. Plus Central Park north. Go at sunset.", "tip": "Book online"}, {"name": "Brooklyn Bridge Walk", "category": "sightseeing", "subcategory": "mustdo", "starred": false, "address": "City Hall area (Manhattan side)", "distance": "far", "distanceText": "25 min subway", "description": "Walk across into DUMBO. Manhattan skyline views from Brooklyn are postcard-perfect. Get ice cream at Brooklyn Ice Cream Factory.", "tip": ""}, {"name": "The Vessel / Hudson Yards", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "20 Hudson Yards", "distance": "close", "distanceText": "10 min walk", "description": "Honeycomb-shaped structure — architecturally wild. The Shops at Hudson Yards are fancy if you want to browse.", "tip": ""}, {"name": "Grand Central Terminal", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "89 E 42nd St, Midtown", "distance": "medium", "distanceText": "15 min subway", "description": "Beaux-Arts masterpiece. Look up at the constellation ceiling. Try the Whispering Gallery — whisper at opposite corners.", "tip": "4/5/6 from 23rd St to Grand Central"}, {"name": "Little Island", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "Pier 55, W 13th St, Hudson River", "distance": "medium", "distanceText": "15 min walk", "description": "Park built on tulip-shaped pillars in the Hudson River. Free, beautiful gardens, great views. Opened 2021.", "tip": ""}, {"name": "Washington Square Park", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "Greenwich Village", "distance": "medium", "distanceText": "15 min walk", "description": "The arch, the fountain, the chess players, the performers — heartbeat of the Village. Great people-watching.", "tip": ""}, {"name": "Harry Potter Store", "category": "sightseeing", "subcategory": "unique", "starred": true, "address": "935 Broadway (corner of 22nd St)", "distance": "close", "distanceText": "2 min walk", "description": "Three floors of immersive magical retail. Butterbeer, wand fitting, the works. We visited during our July 2025 trip.", "tip": "Literally a 2-minute walk from the apartment!"}, {"name": "Flatiron Building", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "175 5th Ave (23rd & Broadway)", "distance": "close", "distanceText": "5 min walk", "description": "The iconic triangular building, recently restored. Walk by it every time you head east from the apartment.", "tip": ""}, {"name": "Chelsea Galleries", "category": "sightseeing", "subcategory": "unique", "starred": false, "address": "19th-28th St, west of 10th Ave", "distance": "close", "distanceText": "10 min walk", "description": "Largest concentration of art galleries in the world. Free to browse. Dozens of galleries showing contemporary art.", "tip": ""}, {"name": "The Lion King", "category": "broadway", "subcategory": "musical", "starred": true, "address": "Minskoff Theatre, 200 W 45th St", "distance": "medium", "distanceText": "20 min subway", "description": "The gold standard of Broadway spectacle. The puppetry, the music, the opening Circle of Life — breathtaking. Perfect for parents.", "tip": "F to 42nd St. Book on TodayTix or TKTS for discounted tickets."}, {"name": "Aladdin", "category": "broadway", "subcategory": "musical", "starred": true, "address": "New Amsterdam Theatre, 214 W 42nd St", "distance": "medium", "distanceText": "20 min subway", "description": "Pure fun. Genie steals the show. Colorful, energetic, crowd-pleasing. Great pick for something lighter and joyful.", "tip": ""}, {"name": "Wicked", "category": "broadway", "subcategory": "musical", "starred": false, "address": "Gershwin Theatre, 222 W 51st St", "distance": "medium", "distanceText": "20 min subway", "description": "The most iconic musical on Broadway. Story behind the Wizard of Oz — incredible sets, vocals, and Defying Gravity is unforgettable.", "tip": ""}, {"name": "Harry Potter and the Cursed Child", "category": "broadway", "subcategory": "musical", "starred": false, "address": "Lyric Theatre, 214 W 43rd St", "distance": "medium", "distanceText": "20 min subway", "description": "Mind-blowing stage magic and illusions. If you loved the Harry Potter Store, this is the ultimate continuation.", "tip": ""}, {"name": "Hadestown", "category": "broadway", "subcategory": "musical", "starred": false, "address": "Walter Kerr Theatre, 219 W 48th St", "distance": "medium", "distanceText": "20 min subway", "description": "Tony winner for Best Musical. Reimagined Greek myth in a jazz-infused underworld. More artsy but deeply moving.", "tip": ""}];
-const CAT_ICONS={"food":"🍽️","sightseeing":"🏙️","broadway":"🎭"};
-const SUB_ICONS={"bagels":"🥯","pizza":"🍕","indian":"🇮🇳","casual":"🍔","finedining":"✨","dessert":"🍰","mustdo":"⭐","unique":"💎","musical":"🎵"};
-const SUB_LABELS={"bagels":"Bagels & Breakfast","pizza":"Pizza","indian":"Indian","casual":"Casual","finedining":"Fine Dining","dessert":"Dessert & Coffee","mustdo":"Must-Do","unique":"Unique","musical":"Musicals"};
-const DIST_LABELS={"close":"🚶 Walking (<10 min)","medium":"🚇 Short Trip (10-20 min)","far":"🚗 Further Out (20+ min)"};
-let filters={cat:'all',sub:'all',dist:'all',stars:false};
-function renderPills(){
+
+// ============= PLACES DATA =============
+const DATA=[
+// ---- NYC FOOD ----
+{"name":"Tompkins Square Bagels","category":"food","subcategory":"bagels","region":"nyc","starred":true,"address":"165 Avenue A, East Village","distance":"far","distanceText":"25 min subway","lat":40.7264,"lng":-73.9797,"description":"The best bagels in the city, period. Hand-rolled, kettle-boiled, perfect chew. Get there early. Try the everything bagel with scallion cream cheese.","tip":"F from 23rd St to 2nd Ave, or 10 min Uber"},
+{"name":"Ess-A-Bagel","category":"food","subcategory":"bagels","region":"nyc","starred":true,"address":"831 3rd Ave, Midtown East","distance":"medium","distanceText":"20 min subway","lat":40.7556,"lng":-73.9691,"description":"Classic NYC bagel institution. Massive bagels, generous spreads. The hand-rolled bagels are legitimately huge.","tip":"6 from 23rd St to 51st St"},
+{"name":"Modern Bread and Bagel","category":"food","subcategory":"bagels","region":"nyc","starred":true,"address":"472 Columbus Ave, UWS (also 25 W 28th St)","distance":"close","distanceText":"5 min walk (28th St location)","lat":40.7461,"lng":-73.9897,"description":"Gluten-free and allergy-friendly bakery. Great bagels, sandwiches, and pastries. The 28th St location is walking distance!","tip":"The 28th St location is a 5-minute walk from the apartment!"},
+{"name":"Russ & Daughters","category":"food","subcategory":"bagels","region":"nyc","starred":false,"address":"179 E Houston St, Lower East Side","distance":"medium","distanceText":"20 min subway","lat":40.7224,"lng":-73.9886,"description":"Iconic NYC appetizing shop since 1914. Lox, bagels, whitefish — the Jewish deli experience at its finest.","tip":""},
+{"name":"Clinton St. Baking Company","category":"food","subcategory":"bagels","region":"nyc","starred":false,"address":"4 Clinton St, Lower East Side","distance":"medium","distanceText":"20 min subway","lat":40.7208,"lng":-73.9838,"description":"Famous for their pancakes and brunch. The blueberry pancakes are legendary. Expect a wait on weekends.","tip":""},
+{"name":"Joe's Pizza","category":"food","subcategory":"pizza","region":"nyc","starred":true,"address":"7 Carmine St, Greenwich Village","distance":"medium","distanceText":"15 min walk","lat":40.7306,"lng":-74.0023,"description":"THE classic NYC slice. No frills, no gimmicks — just a perfect New York cheese slice. Grab a slice, fold it in half, eat it standing on the sidewalk.","tip":""},
+{"name":"Chelsea Market","category":"food","subcategory":"casual","region":"nyc","starred":false,"address":"75 9th Ave, Chelsea","distance":"close","distanceText":"10 min walk","lat":40.7425,"lng":-74.0060,"description":"Food hall in a converted Nabisco factory. Great for wandering and grazing. Los Tacos No. 1, Lobster Place, Dizengoff. Perfect rainy-day option.","tip":""},
+{"name":"Prince Street Pizza","category":"food","subcategory":"pizza","region":"nyc","starred":false,"address":"27 Prince St, Nolita","distance":"medium","distanceText":"20 min subway","lat":40.7231,"lng":-73.9947,"description":"Famous for their pepperoni square (the 'Soho Square') — thick Sicilian-style with crispy cup pepperoni.","tip":""},
+{"name":"Xi'an Famous Foods","category":"food","subcategory":"casual","region":"nyc","starred":false,"address":"34 W 14th St","distance":"close","distanceText":"10 min walk","lat":40.7367,"lng":-73.9965,"description":"Hand-pulled noodles, spicy cumin lamb — real NYC cheap-eats experience. The liang pi cold skin noodles are incredible.","tip":""},
+{"name":"Katz's Delicatessen","category":"food","subcategory":"casual","region":"nyc","starred":false,"address":"205 E Houston St, Lower East Side","distance":"medium","distanceText":"20 min subway","lat":40.7223,"lng":-73.9874,"description":"The most famous deli in America since 1888. Get the pastrami on rye — it's life-changing. 'I'll have what she's having' from When Harry Met Sally.","tip":""},
+{"name":"L'Industrie Pizzeria","category":"food","subcategory":"pizza","region":"nyc","starred":true,"address":"254 S 2nd St, Williamsburg (Brooklyn)","distance":"far","distanceText":"30 min subway","lat":40.7125,"lng":-73.9580,"description":"Arguably the best pizza in NYC right now. Thin, crispy, fresh burrata on top. Worth the trip to Brooklyn.","tip":"L train to Bedford Ave"},
+{"name":"Rubirosa","category":"food","subcategory":"pizza","region":"nyc","starred":true,"address":"235 Mulberry St, Nolita","distance":"medium","distanceText":"20 min subway","lat":40.7228,"lng":-73.9961,"description":"Thin-crust Italian-American. The vodka pizza is legendary. We've been here multiple times. The tie-dye vodka pie is a must-order.","tip":"F to Broadway-Lafayette. Make a reservation on Resy."},
+{"name":"Carbone","category":"food","subcategory":"finedining","region":"nyc","starred":false,"address":"181 Thompson St, Greenwich Village","distance":"medium","distanceText":"15 min walk","lat":40.7275,"lng":-74.0001,"description":"Italian-American fine dining with retro vibes. The spicy rigatoni vodka is famous. Expensive but a real experience.","tip":"Hard to get a reservation — try Resy at midnight"},
+{"name":"Via Carota","category":"food","subcategory":"finedining","region":"nyc","starred":false,"address":"51 Grove St, West Village","distance":"medium","distanceText":"15 min walk","lat":40.7331,"lng":-74.0040,"description":"Rustic Italian — seasonal, simple, perfect. The carciofi fried artichokes are legendary. Walk-ins only, go early (5:30 PM).","tip":""},
+{"name":"The Smith","category":"food","subcategory":"casual","region":"nyc","starred":false,"address":"1900 Broadway, Union Square","distance":"close","distanceText":"10 min walk","lat":40.7409,"lng":-73.9896,"description":"Solid American bistro — great for a comfortable dinner without the fuss. Good cocktails, reliable food.","tip":"Union Square location is closest"},
+{"name":"Masala Times","category":"food","subcategory":"indian","region":"nyc","starred":true,"address":"194 Bleecker St, Greenwich Village","distance":"medium","distanceText":"15 min walk","lat":40.7292,"lng":-73.9999,"description":"Good Indian food in the Village. Solid for when you want something familiar and comforting.","tip":""},
+{"name":"Adda Indian Canteen","category":"food","subcategory":"indian","region":"nyc","starred":false,"address":"31-31 Thomson Ave, Long Island City, Queens","distance":"far","distanceText":"25 min subway","lat":40.7444,"lng":-73.9357,"description":"One of the best Indian restaurants in the city — Michelin-recognized. Worth the trip to Queens. The biryani and kebabs are outstanding.","tip":"7 train from 34th St-Hudson Yards"},
+{"name":"Dhamaka","category":"food","subcategory":"indian","region":"nyc","starred":false,"address":"119 1st Ave, East Village","distance":"far","distanceText":"25 min subway","lat":40.7279,"lng":-73.9844,"description":"Regional Indian food you can't find anywhere else. Michelin Bib Gourmand. The offal dishes and regional specialties are incredible.","tip":""},
+{"name":"Indian Accent","category":"food","subcategory":"indian","region":"nyc","starred":true,"address":"123 W 56th St, Midtown","distance":"far","distanceText":"25 min subway","lat":40.7640,"lng":-73.9785,"description":"One of the most celebrated Indian restaurants in the world — Manish Mehrotra's NYC outpost. The tasting menu reimagines Indian food.","tip":"F to 57th St"},
+{"name":"Tamarind Tribeca","category":"food","subcategory":"indian","region":"nyc","starred":false,"address":"99 Hudson St, Tribeca","distance":"medium","distanceText":"20 min subway","lat":40.7186,"lng":-74.0089,"description":"Upscale Indian — beautiful space, refined food. The lamb chops and tandoori dishes are excellent.","tip":""},
+{"name":"HanGawi","category":"food","subcategory":"indian","region":"nyc","starred":true,"address":"12 E 32nd St, Koreatown","distance":"close","distanceText":"10 min walk","lat":40.7477,"lng":-73.9854,"description":"Fully vegan Korean — Jain-friendly (no onion, no garlic). Shoes off at the door, low tables. Beautiful, meditative, incredible food.","tip":""},
+{"name":"Bungalow","category":"food","subcategory":"indian","region":"nyc","starred":false,"address":"24 First Ave, East Village","distance":"far","distanceText":"25 min subway","lat":40.7240,"lng":-73.9878,"description":"Chef Vikas Khanna's Michelin-starred flagship. Condé Nast's best new restaurants in the world. A journey through India's 28 states.","tip":"F to 2nd Ave. Sun-Wed 5-10:30 PM, Thu-Sat 5-11 PM. Reserve ahead!"},
+{"name":"GupShup","category":"food","subcategory":"indian","region":"nyc","starred":true,"address":"105 Lexington Ave, Gramercy/Curry Hill","distance":"close","distanceText":"10 min walk","lat":40.7452,"lng":-73.9831,"description":"Bungalow's sister restaurant — same team, more casual. Modern Indian street food and cocktails. Vibrant and fun.","tip":"Right in Curry Hill, easy walk from the apartment"},
+{"name":"Baar Baar","category":"food","subcategory":"indian","region":"nyc","starred":true,"address":"22 E 1st St, East Village","distance":"medium","distanceText":"20 min subway","lat":40.7247,"lng":-73.9910,"description":"Modern Indian — stylish space, creative cocktails, elevated takes on Indian classics. Great small plates for sharing.","tip":""},
+{"name":"The Kati Roll Company","category":"food","subcategory":"indian","region":"nyc","starred":true,"address":"99 MacDougal St, Village (also 39 W 46th St)","distance":"medium","distanceText":"15 min walk (MacDougal)","lat":40.7306,"lng":-74.0003,"description":"Kolkata-style kati rolls — basically Indian burritos. Cheap, fast, delicious. Midtown location near Broadway theaters.","tip":"Two locations: MacDougal St (15 min walk) or 46th St near Times Square"},
+{"name":"Curry Hill","category":"food","subcategory":"indian","region":"nyc","starred":false,"address":"Lexington Ave, 26th-30th St","distance":"close","distanceText":"5-10 min walk","lat":40.7447,"lng":-73.9839,"description":"A strip of Indian restaurants — Patiala, Dhaba, Chennai Garden, Tiffin Wallah. Not fancy, but convenient, authentic, and affordable.","tip":"5-10 minute walk east from the apartment"},
+{"name":"Levain Bakery","category":"food","subcategory":"dessert","region":"nyc","starred":false,"address":"167 W 74th St, Upper West Side","distance":"medium","distanceText":"20 min subway","lat":40.7796,"lng":-73.9771,"description":"Massive, gooey, underbaked cookies — the chocolate chip walnut is iconic. One cookie is big enough to split.","tip":""},
+{"name":"Magnolia Bakery","category":"food","subcategory":"dessert","region":"nyc","starred":false,"address":"401 Bleecker St, West Village","distance":"medium","distanceText":"15 min walk","lat":40.7354,"lng":-74.0041,"description":"Classic cupcakes and banana pudding. The banana pudding is actually the move here. Old-school vibes.","tip":""},
+{"name":"Dominique Ansel Bakery","category":"food","subcategory":"dessert","region":"nyc","starred":false,"address":"189 Spring St, Soho","distance":"medium","distanceText":"20 min subway","lat":40.7238,"lng":-74.0004,"description":"Inventor of the Cronut. Beyond that gimmick, the pastries are world-class. The DKA (Kouign Amann) is incredible.","tip":""},
+{"name":"Joe Coffee","category":"food","subcategory":"dessert","region":"nyc","starred":false,"address":"131 W 21st St","distance":"close","distanceText":"3 min walk","lat":40.7415,"lng":-73.9945,"description":"One of the best local coffee chains in NYC. Practically at your doorstep. Great espresso.","tip":""},
+// ---- NYC SIGHTSEEING ----
+{"name":"9/11 Memorial & Museum","category":"sightseeing","subcategory":"mustdo","region":"nyc","starred":true,"address":"180 Greenwich St, Financial District","distance":"medium","distanceText":"20 min subway","lat":40.7115,"lng":-74.0134,"description":"Two massive waterfalls in the footprints of the Twin Towers. The museum below is intense but powerful. Give it 2-3 hours.","tip":"1 train from 23rd St to Chambers St. Book museum tickets online in advance."},
+{"name":"The High Line","category":"sightseeing","subcategory":"mustdo","region":"nyc","starred":false,"address":"Gansevoort St to 34th St","distance":"close","distanceText":"5-15 min walk","lat":40.7480,"lng":-74.0048,"description":"Elevated park on old freight rail tracks. Art installations, Hudson views, gardens. 23rd St entrance is 5 min walk west.","tip":"Multiple entrances along the west side"},
+{"name":"Central Park","category":"sightseeing","subcategory":"mustdo","region":"nyc","starred":false,"address":"59th to 110th St","distance":"medium","distanceText":"15 min subway","lat":40.7829,"lng":-73.9654,"description":"Walk the southern end: Bethesda Fountain, Bow Bridge, Strawberry Fields. Rent a rowboat at the Loeb Boathouse lake.","tip":"Subway to Columbus Circle entrance"},
+{"name":"Top of the Rock","category":"sightseeing","subcategory":"mustdo","region":"nyc","starred":false,"address":"30 Rockefeller Plaza, Midtown","distance":"medium","distanceText":"15 min subway","lat":40.7593,"lng":-73.9791,"description":"Better views than Empire State Building because you can SEE the Empire State Building. Plus Central Park north. Go at sunset.","tip":"Book online"},
+{"name":"Brooklyn Bridge Walk","category":"sightseeing","subcategory":"mustdo","region":"nyc","starred":false,"address":"City Hall area (Manhattan side)","distance":"far","distanceText":"25 min subway","lat":40.7061,"lng":-73.9969,"description":"Walk across into DUMBO. Manhattan skyline views from Brooklyn are postcard-perfect. Get ice cream at Brooklyn Ice Cream Factory.","tip":""},
+{"name":"The Vessel / Hudson Yards","category":"sightseeing","subcategory":"unique","region":"nyc","starred":false,"address":"20 Hudson Yards","distance":"close","distanceText":"10 min walk","lat":40.7542,"lng":-74.0021,"description":"Honeycomb-shaped structure — architecturally wild. The Shops at Hudson Yards are fancy if you want to browse.","tip":""},
+{"name":"Grand Central Terminal","category":"sightseeing","subcategory":"unique","region":"nyc","starred":false,"address":"89 E 42nd St, Midtown","distance":"medium","distanceText":"15 min subway","lat":40.7527,"lng":-73.9772,"description":"Beaux-Arts masterpiece. Look up at the constellation ceiling. Try the Whispering Gallery — whisper at opposite corners.","tip":"4/5/6 from 23rd St to Grand Central"},
+{"name":"Little Island","category":"sightseeing","subcategory":"unique","region":"nyc","starred":false,"address":"Pier 55, W 13th St, Hudson River","distance":"medium","distanceText":"15 min walk","lat":40.7413,"lng":-74.0102,"description":"Park built on tulip-shaped pillars in the Hudson River. Free, beautiful gardens, great views. Opened 2021.","tip":""},
+{"name":"Washington Square Park","category":"sightseeing","subcategory":"unique","region":"nyc","starred":false,"address":"Greenwich Village","distance":"medium","distanceText":"15 min walk","lat":40.7308,"lng":-73.9973,"description":"The arch, the fountain, the chess players, the performers — heartbeat of the Village. Great people-watching.","tip":""},
+{"name":"Harry Potter Store","category":"sightseeing","subcategory":"unique","region":"nyc","starred":true,"address":"935 Broadway (corner of 22nd St)","distance":"close","distanceText":"2 min walk","lat":40.7405,"lng":-73.9895,"description":"Three floors of immersive magical retail. Butterbeer, wand fitting, the works. We visited during our July 2025 trip.","tip":"Literally a 2-minute walk from the apartment!"},
+{"name":"Flatiron Building","category":"sightseeing","subcategory":"unique","region":"nyc","starred":false,"address":"175 5th Ave (23rd & Broadway)","distance":"close","distanceText":"5 min walk","lat":40.7411,"lng":-73.9897,"description":"The iconic triangular building, recently restored. Walk by it every time you head east from the apartment.","tip":""},
+{"name":"Chelsea Galleries","category":"sightseeing","subcategory":"unique","region":"nyc","starred":false,"address":"19th-28th St, west of 10th Ave","distance":"close","distanceText":"10 min walk","lat":40.7487,"lng":-74.0050,"description":"Largest concentration of art galleries in the world. Free to browse. Dozens of galleries showing contemporary art.","tip":""},
+// ---- NYC BROADWAY ----
+{"name":"The Lion King","category":"broadway","subcategory":"musical","region":"nyc","starred":true,"address":"Minskoff Theatre, 200 W 45th St","distance":"medium","distanceText":"20 min subway","lat":40.7578,"lng":-73.9873,"description":"The gold standard of Broadway spectacle. The puppetry, the music, the opening Circle of Life — breathtaking. Perfect for parents.","tip":"F to 42nd St. Book on TodayTix or TKTS for discounted tickets."},
+{"name":"Aladdin","category":"broadway","subcategory":"musical","region":"nyc","starred":true,"address":"New Amsterdam Theatre, 214 W 42nd St","distance":"medium","distanceText":"20 min subway","lat":40.7564,"lng":-73.9880,"description":"Pure fun. Genie steals the show. Colorful, energetic, crowd-pleasing. Great pick for something lighter and joyful.","tip":""},
+{"name":"Wicked","category":"broadway","subcategory":"musical","region":"nyc","starred":false,"address":"Gershwin Theatre, 222 W 51st St","distance":"medium","distanceText":"20 min subway","lat":40.7623,"lng":-73.9849,"description":"The most iconic musical on Broadway. Story behind the Wizard of Oz — incredible sets, vocals, and Defying Gravity is unforgettable.","tip":""},
+{"name":"Harry Potter and the Cursed Child","category":"broadway","subcategory":"musical","region":"nyc","starred":false,"address":"Lyric Theatre, 214 W 43rd St","distance":"medium","distanceText":"20 min subway","lat":40.7571,"lng":-73.9877,"description":"Mind-blowing stage magic and illusions. If you loved the Harry Potter Store, this is the ultimate continuation.","tip":""},
+{"name":"Hadestown","category":"broadway","subcategory":"musical","region":"nyc","starred":false,"address":"Walter Kerr Theatre, 219 W 48th St","distance":"medium","distanceText":"20 min subway","lat":40.7601,"lng":-73.9863,"description":"Tony winner for Best Musical. Reimagined Greek myth in a jazz-infused underworld. More artsy but deeply moving.","tip":""},
+// ---- DC CHERRY BLOSSOMS ----
+{"name":"Tidal Basin","category":"cherry-blossoms","subcategory":"viewing","region":"dc","starred":true,"address":"1501 Maine Ave SW, Washington DC","distance":"n/a","distanceText":"Near National Mall","lat":38.8863,"lng":-77.0365,"description":"THE iconic cherry blossom spot. 3,000+ trees ringing the basin with the Jefferson Memorial as a backdrop. Absolutely magical during peak bloom. Arrive by 7-8 AM to beat the crowds — by 10 AM it's shoulder-to-shoulder.","tip":"Peak bloom projected March 29 - April 1. You'll be here right at the start! Wear comfortable shoes — the full loop is ~2 miles."},
+{"name":"East Potomac Park","category":"cherry-blossoms","subcategory":"viewing","region":"dc","starred":true,"address":"Ohio Dr SW, Washington DC","distance":"n/a","distanceText":"South of Tidal Basin","lat":38.8723,"lng":-77.0289,"description":"Less crowded alternative with 1,800+ cherry trees. Different varieties bloom earlier and later than Tidal Basin — more chance of catching peak. The walking/biking path along the Potomac is gorgeous.","tip":"Walk south from the Tidal Basin along the waterfront. More relaxed pace, better for photos without crowds."},
+{"name":"National Mall","category":"cherry-blossoms","subcategory":"viewing","region":"dc","starred":false,"address":"National Mall, Washington DC","distance":"n/a","distanceText":"Central DC","lat":38.8899,"lng":-77.0229,"description":"Cherry trees scattered throughout. Combine blossom viewing with the monuments and museums — perfect for a full day. The walk from Capitol to Lincoln Memorial with blossoms framing the path is stunning.","tip":"Start at the Capitol and walk west toward Lincoln Memorial. You'll pass the Smithsonian museums, Washington Monument, and WWII Memorial along the way."},
+{"name":"Dumbarton Oaks","category":"cherry-blossoms","subcategory":"viewing","region":"dc","starred":false,"address":"1703 32nd St NW, Georgetown","distance":"n/a","distanceText":"Georgetown","lat":38.9146,"lng":-77.0629,"description":"Beautiful private garden in Georgetown. Smaller, quieter, and more curated than the Tidal Basin. Cherry blossoms plus wisteria and spring blooms. The terraced gardens are architectural art.","tip":"Open Tue-Sun 2-6 PM. $10 admission. Combine with a walk through Georgetown for lunch."},
+// ---- DC SIGHTSEEING ----
+{"name":"Lincoln Memorial","category":"sightseeing","subcategory":"monuments","region":"dc","starred":true,"address":"2 Lincoln Memorial Cir NW, Washington DC","distance":"n/a","distanceText":"National Mall (west end)","lat":38.8893,"lng":-77.0502,"description":"One of America's most powerful monuments. The seated Lincoln is 19 feet tall. Go at sunrise or late evening — dramatically lit and almost empty. The view down the Reflecting Pool to the Washington Monument is iconic.","tip":"Combine with a walk to the nearby WWII, Korean War, and MLK memorials — they're all within 10 minutes of each other."},
+{"name":"WWII Memorial","category":"sightseeing","subcategory":"monuments","region":"dc","starred":false,"address":"1750 Independence Ave SW, Washington DC","distance":"n/a","distanceText":"National Mall","lat":38.8894,"lng":-77.0405,"description":"Beautiful open-air memorial between the Lincoln Memorial and Washington Monument. 56 pillars representing states and territories. The fountain and arches are majestic.","tip":"Open 24 hours. Visit at night when it's lit up."},
+{"name":"MLK Memorial","category":"sightseeing","subcategory":"monuments","region":"dc","starred":false,"address":"1964 Independence Ave SW, Washington DC","distance":"n/a","distanceText":"Near Tidal Basin","lat":38.8862,"lng":-77.0442,"description":"The 30-foot Stone of Hope sculpture is incredibly powerful. Located right along the Tidal Basin — combine with cherry blossom viewing. Read the quotes carved on the walls.","tip":"Right next to the Tidal Basin. Visit during cherry blossom walk."},
+{"name":"Smithsonian National Museum of Natural History","category":"sightseeing","subcategory":"museums","region":"dc","starred":true,"address":"10th St & Constitution Ave NW, Washington DC","distance":"n/a","distanceText":"National Mall","lat":38.8913,"lng":-77.0261,"description":"One of the world's greatest museums — and it's FREE. The Hope Diamond, dinosaur hall, ocean exhibit. You could spend an entire day here and not see everything.","tip":"Free admission, no tickets needed. Open 10 AM - 5:30 PM. The dinosaur hall and gems/minerals are the highlights."},
+{"name":"Smithsonian Air & Space Museum","category":"sightseeing","subcategory":"museums","region":"dc","starred":true,"address":"600 Independence Ave SW, Washington DC","distance":"n/a","distanceText":"National Mall","lat":38.8882,"lng":-77.0199,"description":"Wright Brothers Flyer, Apollo 11, Spirit of St. Louis — all under one roof. Recently renovated with stunning new exhibits. Another must-visit free museum.","tip":"Free. The newly renovated galleries are incredible. Planetarium shows are worth the extra fee."},
+{"name":"U.S. Capitol","category":"sightseeing","subcategory":"monuments","region":"dc","starred":false,"address":"East Capitol St NE & First St SE, Washington DC","distance":"n/a","distanceText":"Capitol Hill","lat":38.8897,"lng":-77.0089,"description":"The iconic dome. Free guided tours available but must be booked online in advance. The view west down the Mall from the Capitol steps is the classic DC panorama.","tip":"Book free tour at visitthecapitol.gov. Go through your congressman's office for a more personalized tour."},
+{"name":"Library of Congress","category":"sightseeing","subcategory":"museums","region":"dc","starred":false,"address":"101 Independence Ave SE, Washington DC","distance":"n/a","distanceText":"Capitol Hill","lat":38.8887,"lng":-77.0047,"description":"The largest library in the world. The Main Reading Room is breathtaking — ornate ceiling, three stories of books. Free to visit, and far less crowded than other DC attractions.","tip":"Free. The Main Reading Room viewing gallery is the highlight. Open Mon-Sat."},
+// ---- DC FOOD ----
+{"name":"Rasika","category":"food","subcategory":"indian","region":"dc","starred":true,"address":"633 D St NW, Washington DC","distance":"n/a","distanceText":"Penn Quarter, DC","lat":38.8965,"lng":-77.0194,"description":"One of the best Indian restaurants in America. Chef Vikram Sunderam's modern Indian cuisine is extraordinary. The palak chaat (crispy spinach) is legendary. Obama's favorite Indian restaurant in DC.","tip":"Reserve well in advance on OpenTable — this place books up fast. Two locations: Penn Quarter (closer to Mall) and West End."},
+{"name":"Bombay Street Food","category":"food","subcategory":"indian","region":"dc","starred":true,"address":"4704 Dempsey St, Rockville, MD","distance":"n/a","distanceText":"30 min from DC","lat":39.0826,"lng":-77.1536,"description":"Excellent chaat, pav bhaji, vada pav — authentic Bombay street food. Casual, affordable, and packed with flavor. Great vegetarian options. Worth the drive to Rockville.","tip":"Casual counter-service. Everything is veg-friendly."},
+{"name":"Pappe","category":"food","subcategory":"indian","region":"dc","starred":false,"address":"1367 Connecticut Ave NW, Washington DC","distance":"n/a","distanceText":"Dupont Circle, DC","lat":38.9094,"lng":-77.0478,"description":"Modern Indian small plates in Dupont Circle. Inventive cocktails and a lively atmosphere. The lamb seekh kebab and butter chicken are standouts.","tip":"Good spot for dinner after a day on the Mall."},
+{"name":"Woodlands","category":"food","subcategory":"indian","region":"dc","starred":false,"address":"8046 New Hampshire Ave, Langley Park, MD","distance":"n/a","distanceText":"20 min from DC","lat":38.9918,"lng":-76.9817,"description":"Authentic South Indian vegetarian. Dosas, idli, uttapam — the real deal. Part of the well-known Woodlands chain. Pure vegetarian, Jain-friendly options available.","tip":"All vegetarian. Ask for Jain-friendly preparations (no onion/garlic)."},
+{"name":"Heritage India","category":"food","subcategory":"indian","region":"dc","starred":false,"address":"2400 Wisconsin Ave NW, Washington DC","distance":"n/a","distanceText":"Georgetown, DC","lat":38.9202,"lng":-77.0713,"description":"Upscale Indian in Georgetown. Beautiful presentation, refined flavors. Good vegetarian selection. Nice option if you're exploring Georgetown and Dumbarton Oaks.","tip":"Near Dumbarton Oaks — combine with cherry blossom garden visit."},
+// ---- GAINESVILLE VA ----
+{"name":"VOSAP Event","category":"sightseeing","subcategory":"events","region":"dc","starred":true,"address":"Gainesville, VA","distance":"n/a","distanceText":"50 min from DC","lat":38.7957,"lng":-77.6131,"description":"Voice of SAP (Specially Abled People) event. Friday March 27 evening and Saturday March 28 from 3 PM onwards. The main reason for the DC/VA leg of the trip.","tip":"Gainesville is ~50 min drive from DC. Plan cherry blossom viewing for the morning of March 28 before VOSAP at 3 PM."}
+];
+
+// ============= CATEGORIES & ICONS =============
+const CAT_ICONS={"food":"🍽️","sightseeing":"🏙️","broadway":"🎭","cherry-blossoms":"🌸"};
+const CAT_LABELS={"food":"Food","sightseeing":"Sightseeing","broadway":"Broadway","cherry-blossoms":"Cherry Blossoms"};
+const SUB_ICONS={"bagels":"🥯","pizza":"🍕","indian":"🇮🇳","casual":"🍔","finedining":"✨","dessert":"🍰","mustdo":"⭐","unique":"💎","musical":"🎵","viewing":"🌸","monuments":"🏛️","museums":"🏛️","events":"📅"};
+const SUB_LABELS={"bagels":"Bagels & Breakfast","pizza":"Pizza","indian":"Indian","casual":"Casual","finedining":"Fine Dining","dessert":"Dessert & Coffee","mustdo":"Must-Do","unique":"Unique","musical":"Musicals","viewing":"Viewing Spots","monuments":"Monuments","museums":"Museums","events":"Events"};
+const REGION_ICONS={"all":"🌎","nyc":"🗽","dc":"🌸"};
+const REGION_LABELS={"all":"All Cities","nyc":"NYC","dc":"DC / VA"};
+
+// ============= STATE =============
+let filters={region:'all',cat:'all',sub:'all',stars:false};
+let map=null;let markers=[];let currentTab='places';
+
+// ============= FILTER RENDERING =============
+function renderFilters(){
+const regionRow=document.getElementById('regionRow');
+regionRow.innerHTML=['all','nyc','dc'].map(r=>`<div class="pill${filters.region===r?' active':''}" onclick="setRegion('${r}')"><span class="pill-icon">${REGION_ICONS[r]}</span>${REGION_LABELS[r]}</div>`).join('');
+
 const catRow=document.getElementById('catRow');
-catRow.innerHTML='<div class="pill'+(filters.cat==='all'?' active':'')+'" onclick="setCat(\'all\')">'+'All</div>';
-['food','sightseeing','broadway'].forEach(c=>{
-catRow.innerHTML+='<div class="pill'+(filters.cat===c?' active':'')+'" onclick="setCat(\''+c+'\')">'+'<span class="pill-icon">'+CAT_ICONS[c]+'</span>'+c[0].toUpperCase()+c.slice(1)+'</div>';
+let cats=new Set();
+DATA.forEach(d=>{if(filters.region==='all'||d.region===filters.region)cats.add(d.category)});
+catRow.innerHTML=`<div class="pill${filters.cat==='all'?' active':''}" onclick="setCat('all')">All</div>`;
+[...cats].forEach(c=>{
+const isCherry=c==='cherry-blossoms';
+catRow.innerHTML+=`<div class="pill${filters.cat===c?(isCherry?' cherry-active':' active'):''}" onclick="setCat('${c}')"><span class="pill-icon">${CAT_ICONS[c]||''}</span>${CAT_LABELS[c]||c}</div>`;
 });
+
 const subRow=document.getElementById('subRow');
 let subs=new Set();
-DATA.forEach(d=>{if(filters.cat==='all'||d.category===filters.cat)subs.add(d.subcategory)});
+DATA.forEach(d=>{
+if(filters.region!=='all'&&d.region!==filters.region)return;
+if(filters.cat!=='all'&&d.category!==filters.cat)return;
+subs.add(d.subcategory);
+});
 if(subs.size>1){
 subRow.style.display='flex';
-subRow.innerHTML='<div class="pill'+(filters.sub==='all'?' active':'')+'" onclick="setSub(\'all\')">'+'All</div>';
+subRow.innerHTML=`<div class="pill${filters.sub==='all'?' active':''}" onclick="setSub('all')">All</div>`;
 [...subs].forEach(s=>{
-subRow.innerHTML+='<div class="pill'+(filters.sub===s?' active':'')+'" onclick="setSub(\''+s+'\')">'+'<span class="pill-icon">'+(SUB_ICONS[s]||'')+'</span>'+(SUB_LABELS[s]||s)+'</div>';
+subRow.innerHTML+=`<div class="pill${filters.sub===s?' active':''}" onclick="setSub('${s}')"><span class="pill-icon">${SUB_ICONS[s]||''}</span>${SUB_LABELS[s]||s}</div>`;
 });
 }else{subRow.style.display='none';subRow.innerHTML='';}
-const distRow=document.getElementById('distRow');
-distRow.innerHTML='<div class="pill'+(filters.dist==='all'?' active':'')+'" onclick="setDist(\'all\')">'+'All Distances</div>';
-['close','medium','far'].forEach(d=>{
-distRow.innerHTML+='<div class="pill'+(filters.dist===d?' active':'')+'" onclick="setDist(\''+d+'\')">'+ DIST_LABELS[d]+'</div>';
-});
 }
+
+// ============= CARD RENDERING =============
 function getFiltered(){
 return DATA.filter(d=>{
+if(filters.region!=='all'&&d.region!==filters.region)return false;
 if(filters.cat!=='all'&&d.category!==filters.cat)return false;
 if(filters.sub!=='all'&&d.subcategory!==filters.sub)return false;
-if(filters.dist!=='all'&&d.distance!==filters.dist)return false;
 if(filters.stars&&!d.starred)return false;
 return true;
 });
 }
+
+function catBg(cat){
+if(cat==='cherry-blossoms')return ' cherry-bg';
+if(cat==='sightseeing')return ' sight-bg';
+if(cat==='broadway')return ' bway-bg';
+return '';
+}
+
 function renderCards(){
 const cards=document.getElementById('cards');
 const items=getFiltered();
@@ -127,14 +326,15 @@ if(!items.length){
 cards.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No spots match your filters.<br>Try adjusting above!</div></div>';
 return;
 }
-cards.innerHTML=items.map((d,i)=>`
+cards.innerHTML=items.map(d=>`
 <div class="card" onclick="this.classList.toggle('open')">
 <div class="card-top">
-<div class="card-icon">${CAT_ICONS[d.category]||'📍'}</div>
+<div class="card-icon${catBg(d.category)}">${CAT_ICONS[d.category]||'📍'}</div>
 <div class="card-info">
-<div class="card-name">${d.name}${d.starred?'<span class="star-badge">⭐ Vishal\'s Pick</span>':''}</div>
+<div class="card-name">${d.name}${d.starred?'<span class="star-badge">⭐ Vishal\'s Pick</span>':''}
+<span class="region-badge ${d.region}">${d.region==='nyc'?'🗽 NYC':'🌸 DC'}</span></div>
 <div class="card-addr">${d.address}</div>
-<div class="card-dist">📍 ${d.distanceText}</div>
+${d.distanceText?`<div class="card-dist">📍 ${d.distanceText}</div>`:''}
 </div>
 <div class="card-chevron">▼</div>
 </div>
@@ -142,15 +342,282 @@ cards.innerHTML=items.map((d,i)=>`
 ${d.tip?`<div class="card-tip">💡 ${d.tip}</div>`:''}
 </div>`).join('');
 }
-function setCat(c){filters.cat=c;filters.sub='all';renderPills();renderCards();}
-function setSub(s){filters.sub=s;renderPills();renderCards();}
-function setDist(d){filters.dist=d;renderPills();renderCards();}
+
+function setRegion(r){filters.region=r;filters.cat='all';filters.sub='all';renderFilters();renderCards();}
+function setCat(c){filters.cat=c;filters.sub='all';renderFilters();renderCards();}
+function setSub(s){filters.sub=s;renderFilters();renderCards();}
 function toggleStars(){
 filters.stars=!filters.stars;
 document.getElementById('starToggle').classList.toggle('on',filters.stars);
 renderCards();
 }
-renderPills();renderCards();
+
+// ============= MAP =============
+const MARKER_COLORS={"food":"#E07A3A","sightseeing":"#4A7FBF","broadway":"#8B5DA8","cherry-blossoms":"#D9328A"};
+
+function createIcon(cat){
+const color=MARKER_COLORS[cat]||'#E07A3A';
+return L.divIcon({
+className:'',
+html:`<div style="width:28px;height:28px;background:${color};border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:14px">${CAT_ICONS[cat]||'📍'}</div>`,
+iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-16]
+});
+}
+
+let mapRegion='all';
+function initMap(){
+if(map)return;
+map=L.map('mapContainer',{zoomControl:true}).setView([40.7431,-73.9923],13);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+attribution:'© OpenStreetMap © CARTO',maxZoom:19
+}).addTo(map);
+renderMapMarkers();
+renderMapRegionPills();
+renderMapLegend();
+setTimeout(()=>map.invalidateSize(),100);
+}
+
+function renderMapRegionPills(){
+const row=document.getElementById('mapRegionRow');
+row.innerHTML=['all','nyc','dc'].map(r=>`<div class="pill${mapRegion===r?' active':''}" onclick="setMapRegion('${r}')"><span class="pill-icon">${REGION_ICONS[r]}</span>${REGION_LABELS[r]}</div>`).join('');
+}
+
+function renderMapLegend(){
+const leg=document.getElementById('mapLegend');
+leg.innerHTML=Object.entries(MARKER_COLORS).map(([k,c])=>`<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${CAT_LABELS[k]||k}</div>`).join('');
+}
+
+function renderMapMarkers(){
+markers.forEach(m=>map.removeLayer(m));
+markers=[];
+const bounds=[];
+DATA.forEach(d=>{
+if(mapRegion!=='all'&&d.region!==mapRegion)return;
+if(!d.lat||!d.lng)return;
+const m=L.marker([d.lat,d.lng],{icon:createIcon(d.category)}).addTo(map);
+m.bindPopup(`<strong>${d.name}</strong><br><span style="font-size:0.85em;color:#666">${d.address}</span><br><span style="font-size:0.85em">${d.description.slice(0,120)}...</span>`);
+markers.push(m);
+bounds.push([d.lat,d.lng]);
+});
+if(bounds.length)map.fitBounds(bounds,{padding:[30,30],maxZoom:14});
+}
+
+function setMapRegion(r){
+mapRegion=r;
+renderMapRegionPills();
+renderMapMarkers();
+}
+
+// ============= ITINERARY =============
+const ITINERARY=[
+{date:"Fri, Mar 20",icon:"✈️",title:"Arrive NYC",type:"travel",
+summary:"United 1855 • LAX → EWR • Arrive 9:25 PM",
+details:`<div class="itin-info">
+<strong>Flight:</strong> United 1855, departs LAX 1:25 PM → arrives EWR 9:25 PM<br>
+<strong>Confirmation:</strong> GW7691<br><br>
+Get to the apartment at <strong>101 W 24th St, Apt 24D</strong> (Chelsea/Flatiron). 
+Newark → Manhattan is ~45 min by Uber/taxi or NJ Transit + subway.<br><br>
+📱 Save the apartment address — this is home base for the next 5 days!
+</div>`},
+
+{date:"Sat, Mar 21",icon:"🗽",title:"NYC Day 1",type:"nyc",
+summary:"Explore the neighborhood • Chelsea, Flatiron, Union Square",
+details:`<p>Start with your neighborhood! Everything below is within a 10-minute walk:</p>
+<div class="itin-places" id="itin-nearby"></div>
+<p style="margin-top:10px">Then venture out:</p>
+<div class="itin-places" id="itin-mustdo1"></div>
+<div class="itin-info">💡 <strong>Tip:</strong> Pick up a MetroCard or use contactless pay on the subway. Unlimited rides make it easy to hop around. The 1/2/3 and F trains from 23rd St get you everywhere.</div>`},
+
+{date:"Sun, Mar 22",icon:"🗽",title:"NYC Day 2",type:"nyc",
+summary:"Broadway, Indian food, and exploring",
+details:`<p>Great day for a <strong>Broadway matinee</strong> — catch Lion King or Aladdin:</p>
+<div class="itin-places" id="itin-broadway"></div>
+<p style="margin-top:10px">Before or after the show, hit up Indian food nearby:</p>
+<div class="itin-places" id="itin-indian-nyc"></div>
+<div class="itin-info">💡 <strong>Tip:</strong> TKTS booth in Times Square sells same-day discounted Broadway tickets. Line up around 2 PM for matinee shows. Or book ahead on TodayTix app.</div>`},
+
+{date:"Mon, Mar 23",icon:"🗽",title:"NYC Day 3",type:"nyc",
+summary:"Museums, Central Park, pizza crawl",
+details:`<p>Head uptown for Central Park and Midtown sights:</p>
+<div class="itin-places" id="itin-uptown"></div>
+<p style="margin-top:10px">Pizza crawl for lunch/dinner:</p>
+<div class="itin-places" id="itin-pizza"></div>
+<div class="itin-info">💡 <strong>Tip:</strong> If it's a nice day, walk through Central Park from the Columbus Circle entrance. Bethesda Fountain → Bow Bridge → Strawberry Fields is a beautiful 45-min loop.</div>`},
+
+{date:"Tue, Mar 24",icon:"🗽",title:"NYC Day 4 — Last Day!",type:"nyc",
+summary:"Brooklyn Bridge, 9/11 Memorial, final favorites",
+details:`<p>Don't miss these before you leave NYC:</p>
+<div class="itin-places" id="itin-lastday"></div>
+<p style="margin-top:10px">Dessert & coffee for the road:</p>
+<div class="itin-places" id="itin-dessert"></div>
+<div class="itin-info">💡 <strong>Tip:</strong> Walk the Brooklyn Bridge in the morning when it's less crowded. Start on the Manhattan side, walk into DUMBO, then grab lunch in Brooklyn or subway back.</div>`},
+
+{date:"Wed, Mar 25",icon:"🛕",title:"Swaminarayan Temple",type:"temple",
+summary:"NJ — BAPS Swaminarayan temple visit",
+details:`<div class="itin-info">
+<strong>BAPS Swaminarayan Mandir</strong><br>
+One of the largest Hindu temples in the Northeast. Beautiful carved marble, peaceful grounds. Give it 2-3 hours for a full visit.<br><br>
+🚗 About 1 hour drive from NYC. Coordinate with Teji for transportation.
+</div>`},
+
+{date:"Thu, Mar 26",icon:"🛕",title:"Temples & Warren",type:"temple",
+summary:"Warren, NJ — Teji's house, Siddhachalam & Shrimad Rajchandra",
+details:`<div class="itin-info">
+<strong>Siddhachalam Jain Tirth</strong> — Blairstown, NJ (≈1 hr from Warren)<br>
+Beautiful Jain pilgrimage center in the mountains. Multiple temples, nature walks, peaceful meditation spaces.<br><br>
+<strong>Shrimad Rajchandra Mission</strong> — NJ area<br>
+Spiritual center and temple visit.<br><br>
+🚗 Rent a car for the day — Blairstown is about 1 hour drive from Warren. 
+Teji will help coordinate.
+</div>`},
+
+{date:"Fri, Mar 27",icon:"🚆",title:"Train to DC/VA",type:"travel",
+summary:"NJ → Washington DC • VOSAP event (evening)",
+details:`<div class="itin-info train">
+<strong>🚆 Amtrak Northeast Regional — Newark Penn to DC Union Station</strong><br><br>
+<strong>Route:</strong> Newark → Trenton → Philadelphia (30th St) → Wilmington → Baltimore → DC Union Station<br>
+<strong>Duration:</strong> ~3 hours<br>
+<strong>Cost:</strong> $50-90/person (book at amtrak.com)<br><br>
+<strong>Suggested schedule:</strong><br>
+• Drive Warren → Newark Penn Station (45 min)<br>
+• Catch a <strong>morning train (9-10 AM departure)</strong><br>
+• Arrive DC Union Station by <strong>12:30-1:30 PM</strong><br>
+• Settle in, rest, then head to <strong>VOSAP event</strong> in the evening<br><br>
+💡 <strong>Tip:</strong> Book Amtrak in advance for best fares. Northeast Regional is comfortable — power outlets, WiFi, café car. The Acela is faster but $150+ and not worth it for this trip.<br><br>
+🚗 <strong>Getting to Gainesville:</strong> Gainesville, VA is ~50 min drive from DC. Rent a car at Union Station, or Uber/Lyft.
+</div>
+<div class="itin-info" style="margin-top:8px">
+<strong>📅 VOSAP Event — Friday Evening</strong><br>
+Voice of SAP (Specially Abled People) event in Gainesville, VA
+</div>`},
+
+{date:"Sat, Mar 28",icon:"🌸",title:"Cherry Blossoms + VOSAP",type:"cherry",
+summary:"🌸 Morning: Cherry blossoms at Tidal Basin • Afternoon: VOSAP from 3 PM",
+details:`<div class="itin-info cherry-info">
+<strong>🌸 Cherry Blossom Game Plan:</strong><br><br>
+<strong>Morning (7-11 AM):</strong> Head to the <strong>Tidal Basin</strong> early! This is THE spot — 3,000+ cherry trees around the water with the Jefferson Memorial backdrop. Peak bloom is projected March 29-April 1, so you're catching the very start. Arrive by 8 AM for photos without crowds.<br><br>
+<strong>Late morning:</strong> Walk south to <strong>East Potomac Park</strong> — 1,800 more trees, way fewer people. Different varieties that may already be at peak.<br><br>
+<strong>Afternoon:</strong> Head to Gainesville for <strong>VOSAP from 3 PM</strong>
+</div>
+<div class="itin-places" id="itin-cherry"></div>
+<div class="itin-info" style="margin-top:8px">
+💡 <strong>Tips:</strong> Wear comfortable walking shoes. Bring a light jacket — DC mornings in late March are 45-55°F. The full Tidal Basin loop is ~2 miles. Carry water and snacks.
+</div>`},
+
+{date:"Sun, Mar 29",icon:"🌸",title:"Peak Bloom Day!",type:"cherry",
+summary:"🌸 PEAK BLOOM — Best day for cherry blossoms!",
+details:`<div class="itin-info cherry-info">
+<strong>🌸 This is projected PEAK BLOOM — the best day!</strong><br><br>
+Go back to the <strong>Tidal Basin</strong> for the full experience, or try different spots today:<br><br>
+• <strong>National Mall:</strong> Cherry trees line the path from the Capitol to Lincoln Memorial. Combine with monuments you missed yesterday.<br>
+• <strong>Dumbarton Oaks:</strong> Beautiful private garden in Georgetown. Smaller and quieter. Open 2-6 PM, $10.<br>
+• <strong>Monuments:</strong> Lincoln Memorial, MLK Memorial, WWII Memorial — all walking distance from the blossoms.<br><br>
+<strong>DC Indian food for lunch/dinner:</strong>
+</div>
+<div class="itin-places" id="itin-dc-food"></div>
+<div class="itin-places" id="itin-dc-sights"></div>`},
+
+{date:"Mon, Mar 30",icon:"🚆",title:"Return to NJ/NYC",type:"travel",
+summary:"Train back from DC • Last night on the East Coast",
+details:`<div class="itin-info train">
+<strong>🚆 Amtrak DC Union Station → Newark Penn</strong><br><br>
+Take a <strong>late morning or early afternoon train</strong> back. ~3 hours to Newark.<br>
+Same route in reverse: DC → Baltimore → Wilmington → Philadelphia → Trenton → Newark.<br><br>
+💡 If you haven't seen everything in DC, catch a later train and spend the morning at the <strong>Smithsonian museums</strong> (free!) or one more walk through the blossoms.
+</div>`},
+
+{date:"Tue, Mar 31",icon:"✈️",title:"Fly Home",type:"travel",
+summary:"United 2641 • EWR → LAX • Departs 5:30 PM",
+details:`<div class="itin-info">
+<strong>Flight:</strong> United 2641, departs EWR 5:30 PM → arrives LAX 8:50 PM<br>
+<strong>Confirmation:</strong> GW7691<br><br>
+Leave for Newark Airport by <strong>2:30-3:00 PM</strong> to be safe with security.<br>
+Pack up, say goodbyes, and head home! 🏡
+</div>`}
+];
+
+function renderItinerary(){
+const wrap=document.getElementById('itinerary');
+wrap.innerHTML=`
+<div class="itin-intro">
+<strong>12-Day Trip</strong> • March 20-31, 2026<br>
+NYC → NJ → DC/VA → Home<br>
+<span style="font-size:0.8rem">Tap any day to expand details & suggestions</span>
+</div>
+<div class="itin-timeline">
+${ITINERARY.map(d=>`
+<div class="itin-day ${d.type}" onclick="this.classList.toggle('open')">
+<div class="itin-dot"></div>
+<div class="itin-card">
+<span class="itin-chevron">▼</span>
+<div class="itin-date">${d.date}</div>
+<div class="itin-title">${d.icon} ${d.title}</div>
+<div class="itin-summary">${d.summary}</div>
+<div class="itin-details">${d.details}</div>
+</div>
+</div>`).join('')}
+</div>`;
+
+// Populate place links
+populatePlaceLinks('itin-nearby',d=>d.region==='nyc'&&d.distance==='close'&&d.category==='food',6);
+populatePlaceLinks('itin-mustdo1',d=>d.region==='nyc'&&d.subcategory==='mustdo',5);
+populatePlaceLinks('itin-broadway',d=>d.category==='broadway',5);
+populatePlaceLinks('itin-indian-nyc',d=>d.region==='nyc'&&d.subcategory==='indian',6);
+populatePlaceLinks('itin-uptown',d=>d.region==='nyc'&&(d.name==='Central Park'||d.name==='Top of the Rock'||d.name==='Grand Central Terminal'),3);
+populatePlaceLinks('itin-pizza',d=>d.subcategory==='pizza',4);
+populatePlaceLinks('itin-lastday',d=>d.name==='Brooklyn Bridge Walk'||d.name==='9/11 Memorial & Museum'||d.name==='Little Island',3);
+populatePlaceLinks('itin-dessert',d=>d.subcategory==='dessert',4);
+populatePlaceLinks('itin-cherry',d=>d.category==='cherry-blossoms',4);
+populatePlaceLinks('itin-dc-food',d=>d.region==='dc'&&d.subcategory==='indian',5);
+populatePlaceLinks('itin-dc-sights',d=>d.region==='dc'&&d.subcategory==='monuments',4);
+}
+
+function populatePlaceLinks(elId,filterFn,max){
+const el=document.getElementById(elId);
+if(!el)return;
+const places=DATA.filter(filterFn).slice(0,max||10);
+el.innerHTML=places.map(p=>`<a class="itin-place-link" href="#" onclick="showPlace('${p.name}');return false">${CAT_ICONS[p.category]||'📍'} ${p.name}</a>`).join('');
+}
+
+function showPlace(name){
+switchTab('places');
+filters.region='all';filters.cat='all';filters.sub='all';filters.stars=false;
+document.getElementById('starToggle').classList.remove('on');
+renderFilters();renderCards();
+setTimeout(()=>{
+const cards=document.querySelectorAll('.card');
+cards.forEach(c=>{
+if(c.querySelector('.card-name').textContent.includes(name)){
+c.classList.add('open');
+c.scrollIntoView({behavior:'smooth',block:'center'});
+}
+});
+},100);
+}
+
+// ============= TAB SWITCHING =============
+function switchTab(tab){
+currentTab=tab;
+document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+if(tab==='places'){
+document.getElementById('tabPlaces').classList.add('active');
+document.getElementById('navPlaces').classList.add('active');
+}else if(tab==='map'){
+document.getElementById('tabMap').classList.add('active');
+document.getElementById('navMap').classList.add('active');
+initMap();
+setTimeout(()=>map&&map.invalidateSize(),200);
+}else if(tab==='itinerary'){
+document.getElementById('tabItinerary').classList.add('active');
+document.getElementById('navItin').classList.add('active');
+}
+}
+
+// ============= INIT =============
+renderFilters();
+renderCards();
+renderItinerary();
 </script>
 </body>
 </html>
