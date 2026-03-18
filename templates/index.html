@@ -94,6 +94,12 @@ body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--
 .legend-item{display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--muted)}
 .legend-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.15)}
 
+/* Transport Toggle */
+.transport-toggle{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
+.transport-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:var(--radius-pill);border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .15s;user-select:none;-webkit-tap-highlight-color:transparent}
+.transport-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.transport-btn:hover{border-color:var(--accent)}
+
 /* Itinerary */
 .itin-wrap{padding:16px 16px 80px;max-width:640px;margin:0 auto}
 .itin-intro{font-size:0.85rem;color:var(--muted);text-align:center;margin-bottom:16px;padding:0 8px}
@@ -268,7 +274,7 @@ const REGION_LABELS={"all":"All Cities","nyc":"NYC","dc":"DC / VA"};
 
 // ============= STATE =============
 let filters={region:'all',cat:'all',sub:'all',stars:false};
-let map=null;let markers=[];let currentTab='places';
+let map=null;let markers=[];let currentTab='places';let transportMode='drive';
 
 // ============= FILTER RENDERING =============
 function renderFilters(){
@@ -462,29 +468,51 @@ One of the largest Hindu temples in the Northeast. Beautiful carved marble, peac
 
 {date:"Thu, Mar 26",icon:"🛕",title:"Temples & Warren",type:"temple",
 summary:"Warren, NJ — Teji's house, Siddhachalam & Shrimad Rajchandra",
-details:`<div class="itin-info">
+detailsDrive:`<div class="itin-info">
 <strong>Siddhachalam Jain Tirth</strong> — Blairstown, NJ (≈1 hr from Warren)<br>
 Beautiful Jain pilgrimage center in the mountains. Multiple temples, nature walks, peaceful meditation spaces.<br><br>
 <strong>Shrimad Rajchandra Mission</strong> — NJ area<br>
 Spiritual center and temple visit.<br><br>
-🚗 Rent a car for the day — Blairstown is about 1 hour drive from Warren. 
-Teji will help coordinate.
+🚗 <strong>Pick up rental car today</strong> — you'll keep it through March 31. Blairstown is about 1 hour drive from Warren.
+</div>`,
+detailsTrain:`<div class="itin-info">
+<strong>Siddhachalam Jain Tirth</strong> — Blairstown, NJ (≈1 hr from Warren)<br>
+Beautiful Jain pilgrimage center in the mountains. Multiple temples, nature walks, peaceful meditation spaces.<br><br>
+<strong>Shrimad Rajchandra Mission</strong> — NJ area<br>
+Spiritual center and temple visit.<br><br>
+🚗 <strong>Teji drives</strong> — she'll take you to the temples and coordinate the day. No rental needed!
 </div>`},
 
-{date:"Fri, Mar 27",icon:"🚆",title:"Train to DC/VA",type:"travel",
+{date:"Fri, Mar 27",icon:"🚗",title:"Drive to DC/VA",titleTrain:"🚆 Train to DC/VA",type:"travel",
 summary:"NJ → Washington DC • VOSAP event (evening)",
-details:`<div class="itin-info train">
-<strong>🚆 Amtrak Northeast Regional — Newark Penn to DC Union Station</strong><br><br>
+summaryTrain:"NJ → Washington DC via Amtrak • VOSAP event (evening)",
+detailsDrive:`<div class="itin-info">
+<strong>🚗 Drive: Warren, NJ → Gainesville, VA</strong><br><br>
+<strong>Distance:</strong> ~250 miles<br>
+<strong>Duration:</strong> ~4 hours (via I-78 W → I-81 S → I-66 E)<br><br>
+<strong>Suggested schedule:</strong><br>
+• Leave Warren by <strong>9-10 AM</strong><br>
+• Arrive Gainesville by <strong>1-2 PM</strong><br>
+• Rest and settle in<br>
+• <strong>VOSAP event</strong> in the evening<br><br>
+💡 <strong>Tip:</strong> Scenic route through Pennsylvania. Stop in Harrisburg or along I-81 for lunch if needed. Avoid leaving after 2 PM — DC-area traffic gets brutal.
+</div>
+<div class="itin-info" style="margin-top:8px">
+<strong>📅 VOSAP Event — Friday Evening</strong><br>
+Voice of SAP (Specially Abled People) event in Gainesville, VA
+</div>`,
+detailsTrain:`<div class="itin-info train">
+<strong>🚆 Amtrak Northeast Regional — Newark Penn → DC Union Station</strong><br><br>
 <strong>Route:</strong> Newark → Trenton → Philadelphia (30th St) → Wilmington → Baltimore → DC Union Station<br>
 <strong>Duration:</strong> ~3 hours<br>
 <strong>Cost:</strong> $50-90/person (book at amtrak.com)<br><br>
 <strong>Suggested schedule:</strong><br>
-• Drive Warren → Newark Penn Station (45 min)<br>
+• Teji drops you at <strong>Newark Penn Station</strong> (45 min from Warren)<br>
 • Catch a <strong>morning train (9-10 AM departure)</strong><br>
 • Arrive DC Union Station by <strong>12:30-1:30 PM</strong><br>
 • Settle in, rest, then head to <strong>VOSAP event</strong> in the evening<br><br>
-💡 <strong>Tip:</strong> Book Amtrak in advance for best fares. Northeast Regional is comfortable — power outlets, WiFi, café car. The Acela is faster but $150+ and not worth it for this trip.<br><br>
-🚗 <strong>Getting to Gainesville:</strong> Gainesville, VA is ~50 min drive from DC. Rent a car at Union Station, or Uber/Lyft.
+💡 <strong>Tip:</strong> Book Amtrak in advance for best fares. Northeast Regional is comfortable — power outlets, WiFi, café car.<br><br>
+🚕 <strong>Getting to Gainesville:</strong> Gainesville, VA is ~50 min from DC. Uber/Lyft or rent a car at Union Station.
 </div>
 <div class="itin-info" style="margin-top:8px">
 <strong>📅 VOSAP Event — Friday Evening</strong><br>
@@ -493,69 +521,123 @@ Voice of SAP (Specially Abled People) event in Gainesville, VA
 
 {date:"Sat, Mar 28",icon:"🌸",title:"Cherry Blossoms + VOSAP",type:"cherry",
 summary:"🌸 Morning: Cherry blossoms at Tidal Basin • Afternoon: VOSAP from 3 PM",
-details:`<div class="itin-info cherry-info">
+detailsDrive:`<div class="itin-info cherry-info">
 <strong>🌸 Cherry Blossom Game Plan:</strong><br><br>
 <strong>Morning (7-11 AM):</strong> Head to the <strong>Tidal Basin</strong> early! This is THE spot — 3,000+ cherry trees around the water with the Jefferson Memorial backdrop. Peak bloom is projected March 29-April 1, so you're catching the very start. Arrive by 8 AM for photos without crowds.<br><br>
 <strong>Late morning:</strong> Walk south to <strong>East Potomac Park</strong> — 1,800 more trees, way fewer people. Different varieties that may already be at peak.<br><br>
+🚗 <strong>Parking tip:</strong> Park at a Virginia Metro station (<strong>Vienna</strong> or <strong>Franconia-Springfield</strong>, ~$5/day) and Metro into DC. Tidal Basin parking during cherry blossom week is a nightmare — limited spots, $25+/hr garages.<br><br>
 <strong>Afternoon:</strong> Head to Gainesville for <strong>VOSAP from 3 PM</strong>
 </div>
 <div class="itin-places" id="itin-cherry"></div>
+<div class="itin-info" style="margin-top:8px">
+💡 <strong>Tips:</strong> Wear comfortable walking shoes. Bring a light jacket — DC mornings in late March are 45-55°F. The full Tidal Basin loop is ~2 miles. Carry water and snacks.
+</div>`,
+detailsTrain:`<div class="itin-info cherry-info">
+<strong>🌸 Cherry Blossom Game Plan:</strong><br><br>
+<strong>Morning (7-11 AM):</strong> Head to the <strong>Tidal Basin</strong> early! This is THE spot — 3,000+ cherry trees around the water with the Jefferson Memorial backdrop. Peak bloom is projected March 29-April 1, so you're catching the very start. Arrive by 8 AM for photos without crowds.<br><br>
+<strong>Late morning:</strong> Walk south to <strong>East Potomac Park</strong> — 1,800 more trees, way fewer people. Different varieties that may already be at peak.<br><br>
+🚇 <strong>Getting around:</strong> Use the Metro — Smithsonian station is right at the Mall. No parking hassle!<br><br>
+<strong>Afternoon:</strong> Head to Gainesville for <strong>VOSAP from 3 PM</strong> (Uber/Lyft ~50 min)
+</div>
+<div class="itin-places" id="itin-cherry-train"></div>
 <div class="itin-info" style="margin-top:8px">
 💡 <strong>Tips:</strong> Wear comfortable walking shoes. Bring a light jacket — DC mornings in late March are 45-55°F. The full Tidal Basin loop is ~2 miles. Carry water and snacks.
 </div>`},
 
 {date:"Sun, Mar 29",icon:"🌸",title:"Peak Bloom Day!",type:"cherry",
 summary:"🌸 PEAK BLOOM — Best day for cherry blossoms!",
-details:`<div class="itin-info cherry-info">
+detailsDrive:`<div class="itin-info cherry-info">
 <strong>🌸 This is projected PEAK BLOOM — the best day!</strong><br><br>
 Go back to the <strong>Tidal Basin</strong> for the full experience, or try different spots today:<br><br>
 • <strong>National Mall:</strong> Cherry trees line the path from the Capitol to Lincoln Memorial. Combine with monuments you missed yesterday.<br>
 • <strong>Dumbarton Oaks:</strong> Beautiful private garden in Georgetown. Smaller and quieter. Open 2-6 PM, $10.<br>
 • <strong>Monuments:</strong> Lincoln Memorial, MLK Memorial, WWII Memorial — all walking distance from the blossoms.<br><br>
+🚗 <strong>Option:</strong> If heading to Harrison today, leave by mid-afternoon. DC → Harrison, NY is ~4 hours via I-95 north.<br><br>
 <strong>DC Indian food for lunch/dinner:</strong>
 </div>
 <div class="itin-places" id="itin-dc-food"></div>
-<div class="itin-places" id="itin-dc-sights"></div>`},
+<div class="itin-places" id="itin-dc-sights"></div>`,
+detailsTrain:`<div class="itin-info cherry-info">
+<strong>🌸 This is projected PEAK BLOOM — the best day!</strong><br><br>
+Go back to the <strong>Tidal Basin</strong> for the full experience, or try different spots today:<br><br>
+• <strong>National Mall:</strong> Cherry trees line the path from the Capitol to Lincoln Memorial. Combine with monuments you missed yesterday.<br>
+• <strong>Dumbarton Oaks:</strong> Beautiful private garden in Georgetown. Smaller and quieter. Open 2-6 PM, $10.<br>
+• <strong>Monuments:</strong> Lincoln Memorial, MLK Memorial, WWII Memorial — all walking distance from the blossoms.<br><br>
+🚆 <strong>Option:</strong> If heading to Harrison today, take an afternoon Amtrak from DC Union Station → New York Penn Station (~3.5 hrs). Parag picks you up from the station.<br><br>
+<strong>DC Indian food for lunch/dinner:</strong>
+</div>
+<div class="itin-places" id="itin-dc-food-train"></div>
+<div class="itin-places" id="itin-dc-sights-train"></div>`},
 
-{date:"Mon, Mar 30",icon:"🚆",title:"Return to NJ/NYC",type:"travel",
-summary:"Train back from DC • Last night on the East Coast",
-details:`<div class="itin-info train">
-<strong>🚆 Amtrak DC Union Station → Newark Penn</strong><br><br>
-Take a <strong>late morning or early afternoon train</strong> back. ~3 hours to Newark.<br>
-Same route in reverse: DC → Baltimore → Wilmington → Philadelphia → Trenton → Newark.<br><br>
-💡 If you haven't seen everything in DC, catch a later train and spend the morning at the <strong>Smithsonian museums</strong> (free!) or one more walk through the blossoms.
+{date:"Mon, Mar 30",icon:"🏠",title:"Harrison, NY — Parag Sheth's",type:"travel",
+summary:"Stay at Parag Sheth's house in Harrison, NY",
+detailsDrive:`<div class="itin-info">
+<strong>🏠 Harrison, NY — Parag Sheth's house</strong><br><br>
+Relax and spend the day with family! Harrison is in Westchester County, just north of NYC.<br><br>
+🚗 If coming from DC today: ~4 hours drive via I-95 north. Leave in the morning to have a full evening with Parag's family.<br><br>
+If you arrived yesterday, enjoy a relaxed day. Pack up and get ready for tomorrow's flight home.
+</div>`,
+detailsTrain:`<div class="itin-info">
+<strong>🏠 Harrison, NY — Parag Sheth's house</strong><br><br>
+Relax and spend the day with family! Harrison is in Westchester County, just north of NYC.<br><br>
+🚆 If coming from DC today: Amtrak to <strong>New York Penn Station</strong> (~3.5 hrs) or <strong>Stamford, CT</strong> (~4 hrs). Parag picks you up from the station — Harrison is 30 min from either.<br><br>
+If you arrived yesterday, enjoy a relaxed day. Pack up and get ready for tomorrow's flight home.
 </div>`},
 
 {date:"Tue, Mar 31",icon:"✈️",title:"Fly Home",type:"travel",
-summary:"United 2641 • EWR → LAX • Departs 5:30 PM",
-details:`<div class="itin-info">
+summary:"Harrison, NY → EWR (~30 min) • United 2641 • 5:30 PM → LAX",
+detailsDrive:`<div class="itin-info">
 <strong>Flight:</strong> United 2641, departs EWR 5:30 PM → arrives LAX 8:50 PM<br>
 <strong>Confirmation:</strong> GW7691<br><br>
-Leave for Newark Airport by <strong>2:30-3:00 PM</strong> to be safe with security.<br>
-Pack up, say goodbyes, and head home! 🏡
+🚗 <strong>Harrison, NY → Newark Airport:</strong> Only ~30 min drive!<br>
+Drop off rental car at EWR. Leave by <strong>2:30-3:00 PM</strong> to be safe with security.<br><br>
+Home sweet home! 🏡
+</div>`,
+detailsTrain:`<div class="itin-info">
+<strong>Flight:</strong> United 2641, departs EWR 5:30 PM → arrives LAX 8:50 PM<br>
+<strong>Confirmation:</strong> GW7691<br><br>
+🚗 <strong>Parag drops you at Newark Airport</strong> — Harrison to EWR is only ~30 min!<br>
+Leave by <strong>2:30-3:00 PM</strong> to be safe with security.<br><br>
+Home sweet home! 🏡
 </div>`}
 ];
 
+function setTransportMode(mode){
+transportMode=mode;
+renderItinerary();
+}
+
 function renderItinerary(){
 const wrap=document.getElementById('itinerary');
+const m=transportMode;
 wrap.innerHTML=`
 <div class="itin-intro">
 <strong>12-Day Trip</strong> • March 20-31, 2026<br>
-NYC → NJ → DC/VA → Home<br>
+NYC → NJ → DC/VA → Harrison, NY → Home<br>
 <span style="font-size:0.8rem">Tap any day to expand details & suggestions</span>
 </div>
+<div class="transport-toggle">
+<div class="transport-btn${m==='drive'?' active':''}" onclick="setTransportMode('drive')">🚗 Drive</div>
+<div class="transport-btn${m==='train'?' active':''}" onclick="setTransportMode('train')">🚆 Train + Family</div>
+</div>
 <div class="itin-timeline">
-${ITINERARY.map(d=>`
+${ITINERARY.map(d=>{
+const details=d.detailsDrive?(m==='drive'?d.detailsDrive:d.detailsTrain):d.details;
+const title=d.titleTrain&&m==='train'?d.titleTrain:(d.icon+' '+d.title);
+const summary=d.summaryTrain&&m==='train'?d.summaryTrain:d.summary;
+const titleDisplay=d.titleTrain?title:(d.icon+' '+d.title);
+return `
 <div class="itin-day ${d.type}" onclick="this.classList.toggle('open')">
 <div class="itin-dot"></div>
 <div class="itin-card">
 <span class="itin-chevron">▼</span>
 <div class="itin-date">${d.date}</div>
-<div class="itin-title">${d.icon} ${d.title}</div>
-<div class="itin-summary">${d.summary}</div>
-<div class="itin-details">${d.details}</div>
+<div class="itin-title">${titleDisplay}</div>
+<div class="itin-summary">${summary}</div>
+<div class="itin-details">${details}</div>
 </div>
-</div>`).join('')}
+</div>`;
+}).join('')}
 </div>`;
 
 // Populate place links
@@ -568,8 +650,11 @@ populatePlaceLinks('itin-pizza',d=>d.subcategory==='pizza',4);
 populatePlaceLinks('itin-lastday',d=>d.name==='Brooklyn Bridge Walk'||d.name==='9/11 Memorial & Museum'||d.name==='Little Island',3);
 populatePlaceLinks('itin-dessert',d=>d.subcategory==='dessert',4);
 populatePlaceLinks('itin-cherry',d=>d.category==='cherry-blossoms',4);
+populatePlaceLinks('itin-cherry-train',d=>d.category==='cherry-blossoms',4);
 populatePlaceLinks('itin-dc-food',d=>d.region==='dc'&&d.subcategory==='indian',5);
+populatePlaceLinks('itin-dc-food-train',d=>d.region==='dc'&&d.subcategory==='indian',5);
 populatePlaceLinks('itin-dc-sights',d=>d.region==='dc'&&d.subcategory==='monuments',4);
+populatePlaceLinks('itin-dc-sights-train',d=>d.region==='dc'&&d.subcategory==='monuments',4);
 }
 
 function populatePlaceLinks(elId,filterFn,max){
