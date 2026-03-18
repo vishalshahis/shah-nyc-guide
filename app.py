@@ -84,9 +84,9 @@ SPOTS = [
     # Gainesville VA
     {"name":"VOSAP Event","lat":38.7957,"lng":-77.6131,"category":"sightseeing","subcategory":"events","starred":True,"address":"Gainesville, VA","distanceText":"50 min from DC","description":"Voice of SAP event. Friday Mar 27 evening and Saturday Mar 28 from 3 PM onwards.","tip":"~50 min drive from DC. Plan cherry blossoms for morning before VOSAP at 3 PM."},
     # DC Food — Vishal Picks from Aug 2025 trip
-    {"name":"Old Ebbitt Grill","lat":38.8986,"lng":-77.0340,"category":"food","subcategory":"finedining","starred":True,"address":"675 15th St NW, Washington DC","distanceText":"Penn Quarter, DC","description":"Classic DC institution right by the White House. Oysters are the move. Vishal ate here during his August 2025 DC trip.","tip":"Walking distance from National Mall. Great for lunch between museum visits."},
-    {"name":"Founding Farmers","lat":38.8998,"lng":-77.0423,"category":"food","subcategory":"casual","starred":True,"address":"1900 Pennsylvania Ave NW, Washington DC","distanceText":"Foggy Bottom, DC","description":"Farm-to-table brunch institution. Chicken and waffles are legendary. Vishal went here in August 2025. Great vegetarian options.","tip":"Perfect for brunch before a day on the Mall."},
-    {"name":"Bluejacket","lat":38.8764,"lng":-76.9995,"category":"food","subcategory":"casual","starred":True,"address":"300 Tingey St SE, Washington DC (Navy Yard)","distanceText":"Navy Yard, DC","description":"Brewery in Navy Yard with excellent craft beer flights. Vishal did a beer flight here in August 2025.","tip":"Near Nationals Park. Fun evening spot."},
+    {"name":"Rasika West End","lat":38.9041,"lng":-77.0502,"category":"food","subcategory":"indian","starred":True,"address":"1190 New Hampshire Ave NW, Washington DC","distanceText":"West End, DC","description":"Second location of the James Beard-winning Rasika. Same extraordinary modern Indian cuisine. Excellent vegetarian menu — try the palak chaat, daal makhani, and aloo gobi. Beautiful patio in warm weather.","tip":"Easier to get reservations than Penn Quarter. Near Dupont Circle."},
+    {"name":"Founding Farmers","lat":38.8998,"lng":-77.0423,"category":"food","subcategory":"casual","starred":False,"address":"1900 Pennsylvania Ave NW, Washington DC","distanceText":"Foggy Bottom, DC","description":"Farm-to-table restaurant on Pennsylvania Ave. Good vegetarian options including veggie bowls, salads, flatbreads, and seasonal sides. Solid brunch spot near the White House.","tip":"Good for brunch before a day on the Mall. Ask about their vegetarian specials."},
+    {"name":"Bluejacket","lat":38.8764,"lng":-76.9995,"category":"food","subcategory":"casual","starred":False,"address":"300 Tingey St SE, Washington DC (Navy Yard)","distanceText":"Navy Yard, DC","description":"Brewery in Navy Yard with craft beer and bar food. Non-beer options available too.","tip":"Near Nationals Park. More of a drinks/evening spot."},
     # DC Sightseeing — Vishal Picks from Aug 2025 trip
     {"name":"National Museum of African American History","lat":38.8910,"lng":-77.0168,"category":"sightseeing","subcategory":"museums","starred":True,"address":"1400 Constitution Ave NW, Washington DC","distanceText":"National Mall","description":"One of DC's most powerful museums. Vishal visited in August 2025. Free but need timed entry passes.","tip":"Book timed passes at nmaahc.si.edu well in advance."},
     {"name":"Great Falls Park","lat":38.9983,"lng":-77.2536,"category":"sightseeing","subcategory":"unique","starred":True,"address":"9200 Old Dominion Dr, McLean, VA","distanceText":"30 min from DC","description":"Dramatic waterfalls where the Potomac drops 76 feet. Vishal went here in August 2025. Close to the Gainesville route.","tip":"$20/vehicle. Overlook Trail gives best views quickly."},
@@ -131,18 +131,20 @@ TRIP OVERVIEW:
 - Mar 20-24: NYC (home base: 101 W 24th St, Apt 24D, Chelsea/Flatiron)
 - Mar 25: NJ — Swaminarayan (BAPS) temple visit
 - Mar 26: Warren, NJ — Teji's house, Siddhachalam & Shrimad Rajchandra temples (rent a car)
-- Mar 27: Train from Newark to DC — VOSAP event in Gainesville, VA (evening)
+- Mar 27: Travel to DC/VA — VOSAP event in Gainesville, VA (evening)
 - Mar 28: Cherry blossoms (morning) + VOSAP from 3 PM
 - Mar 29: Cherry blossoms (PEAK BLOOM projected Mar 29 - Apr 1!)
-- Mar 30: Travel back to NJ
-- Mar 31: Fly home EWR → LAX
+- Mar 30: Harrison, NY — cousin Parag Sheth's house
+- Mar 31: Fly home EWR → LAX (5:30 PM)
 
 CONTEXT:
-- The family is Indian vegetarian. Vegetarian and vegan-friendly options are always appreciated
+- The family is strictly vegetarian — ONLY recommend vegetarian food. No meat, no seafood, no eggs
+- When recommending restaurants, always highlight vegetarian dishes specifically
 - HanGawi is fully vegan Korean, Jain-friendly (no onion, no garlic) — perfect for them
 - GupShup and Bungalow are sister restaurants from Chef Vikas Khanna's team
 - Curry Hill (Lex Ave, 26th-30th St) is a 5-10 min walk from the NYC apartment — great for familiar Indian food
-- Rasika in DC is one of the best Indian restaurants in America — Obama's favorite
+- Rasika in DC is one of the best Indian restaurants in America — James Beard winning, amazing vegetarian options
+- Woodlands in Maryland is pure vegetarian South Indian with Jain-friendly options
 - For the NJ→DC leg: Amtrak Northeast Regional from Newark Penn to DC Union Station, ~3 hours, $50-90
 - Cherry blossoms: Tidal Basin is THE iconic spot (go early AM), East Potomac Park is less crowded
 - Gainesville, VA is ~50 min drive from DC
