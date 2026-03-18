@@ -135,6 +135,26 @@ body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--
 .filters{padding:10px 24px 6px}
 .itin-wrap{padding:20px 24px 80px}
 }
+
+/* Chat */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 140px);max-width:640px;margin:0 auto}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{display:flex;gap:10px;align-items:flex-start}
+.chat-msg.user{flex-direction:row-reverse}
+.chat-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.chat-msg.user .chat-avatar{background:var(--gold-bg)}
+.chat-bubble{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;font-size:0.88rem;line-height:1.55;max-width:85%;box-shadow:var(--shadow)}
+.chat-msg.user .chat-bubble{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chat-input-wrap{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);background:var(--bg);padding-bottom:calc(12px + env(safe-area-inset-bottom) + 50px)}
+.chat-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-pill);font-size:0.9rem;background:var(--surface);color:var(--text);outline:none}
+.chat-input:focus{border-color:var(--accent)}
+.chat-send{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-send:disabled{opacity:0.5;cursor:not-allowed}
+.chat-typing{display:flex;gap:4px;padding:4px 0}
+.chat-typing span{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:typingDot 1.4s infinite}
+.chat-typing span:nth-child(2){animation-delay:0.2s}
+.chat-typing span:nth-child(3){animation-delay:0.4s}
+@keyframes typingDot{0%,60%,100%{opacity:0.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-4px)}}
 </style>
 </head>
 <body>
@@ -173,6 +193,22 @@ body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--
 <div class="itin-wrap" id="itinerary"></div>
 </div>
 
+<!-- CHAT TAB -->
+<div class="tab-content" id="tabChat">
+<div class="chat-wrap">
+<div class="chat-messages" id="chatMessages">
+<div class="chat-msg bot">
+<div class="chat-avatar">🗽</div>
+<div class="chat-bubble">Hey! I'm your trip concierge — ask me anything about NYC, DC, restaurants, trains, cherry blossoms, or logistics. I know all of Vishal's personal picks! 🍽️🌸</div>
+</div>
+</div>
+<div class="chat-input-wrap">
+<input type="text" id="chatInput" class="chat-input" placeholder="Ask me anything..." maxlength="500" autocomplete="off">
+<button class="chat-send" id="chatSend" onclick="sendChat()">➤</button>
+</div>
+</div>
+</div>
+
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
 <div class="nav-btn active" onclick="switchTab('places')" id="navPlaces">
@@ -183,6 +219,9 @@ body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--
 </div>
 <div class="nav-btn" onclick="switchTab('itinerary')" id="navItin">
 <span class="nav-icon">📅</span>Itinerary
+</div>
+<div class="nav-btn" onclick="switchTab('chat')" id="navChat">
+<span class="nav-icon">💬</span>Chat
 </div>
 </div>
 
@@ -252,7 +291,7 @@ const DATA=[
 {"name":"MLK Memorial","category":"sightseeing","subcategory":"monuments","region":"dc","starred":false,"address":"1964 Independence Ave SW, Washington DC","distance":"n/a","distanceText":"Near Tidal Basin","lat":38.8862,"lng":-77.0442,"description":"The 30-foot Stone of Hope sculpture is incredibly powerful. Located right along the Tidal Basin — combine with cherry blossom viewing. Read the quotes carved on the walls.","tip":"Right next to the Tidal Basin. Visit during cherry blossom walk."},
 {"name":"Smithsonian National Museum of Natural History","category":"sightseeing","subcategory":"museums","region":"dc","starred":true,"address":"10th St & Constitution Ave NW, Washington DC","distance":"n/a","distanceText":"National Mall","lat":38.8913,"lng":-77.0261,"description":"One of the world's greatest museums — and it's FREE. The Hope Diamond, dinosaur hall, ocean exhibit. You could spend an entire day here and not see everything.","tip":"Free admission, no tickets needed. Open 10 AM - 5:30 PM. The dinosaur hall and gems/minerals are the highlights."},
 {"name":"Smithsonian Air & Space Museum","category":"sightseeing","subcategory":"museums","region":"dc","starred":true,"address":"600 Independence Ave SW, Washington DC","distance":"n/a","distanceText":"National Mall","lat":38.8882,"lng":-77.0199,"description":"Wright Brothers Flyer, Apollo 11, Spirit of St. Louis — all under one roof. Recently renovated with stunning new exhibits. Another must-visit free museum.","tip":"Free. The newly renovated galleries are incredible. Planetarium shows are worth the extra fee."},
-{"name":"U.S. Capitol","category":"sightseeing","subcategory":"monuments","region":"dc","starred":false,"address":"East Capitol St NE & First St SE, Washington DC","distance":"n/a","distanceText":"Capitol Hill","lat":38.8897,"lng":-77.0089,"description":"The iconic dome. Free guided tours available but must be booked online in advance. The view west down the Mall from the Capitol steps is the classic DC panorama.","tip":"Book free tour at visitthecapitol.gov. Go through your congressman's office for a more personalized tour."},
+{"name":"U.S. Capitol","category":"sightseeing","subcategory":"monuments","region":"dc","starred":true,"address":"East Capitol St NE & First St SE, Washington DC","distance":"n/a","distanceText":"Capitol Hill","lat":38.8897,"lng":-77.0089,"description":"The iconic dome. Free guided tours available — book online in advance. Vishal did the tour in August 2025 with a group of 8. The view west down the Mall from the Capitol steps is the classic DC panorama.","tip":"Book free tour at visitthecapitol.gov. Vishal's group went through Krutarth Mehta — you can also go through your congressman's office for a more personalized tour."},
 {"name":"Library of Congress","category":"sightseeing","subcategory":"museums","region":"dc","starred":false,"address":"101 Independence Ave SE, Washington DC","distance":"n/a","distanceText":"Capitol Hill","lat":38.8887,"lng":-77.0047,"description":"The largest library in the world. The Main Reading Room is breathtaking — ornate ceiling, three stories of books. Free to visit, and far less crowded than other DC attractions.","tip":"Free. The Main Reading Room viewing gallery is the highlight. Open Mon-Sat."},
 // ---- DC FOOD ----
 {"name":"Rasika","category":"food","subcategory":"indian","region":"dc","starred":true,"address":"633 D St NW, Washington DC","distance":"n/a","distanceText":"Penn Quarter, DC","lat":38.8965,"lng":-77.0194,"description":"One of the best Indian restaurants in America. Chef Vikram Sunderam's modern Indian cuisine is extraordinary. The palak chaat (crispy spinach) is legendary. Obama's favorite Indian restaurant in DC.","tip":"Reserve well in advance on OpenTable — this place books up fast. Two locations: Penn Quarter (closer to Mall) and West End."},
@@ -261,7 +300,14 @@ const DATA=[
 {"name":"Woodlands","category":"food","subcategory":"indian","region":"dc","starred":false,"address":"8046 New Hampshire Ave, Langley Park, MD","distance":"n/a","distanceText":"20 min from DC","lat":38.9918,"lng":-76.9817,"description":"Authentic South Indian vegetarian. Dosas, idli, uttapam — the real deal. Part of the well-known Woodlands chain. Pure vegetarian, Jain-friendly options available.","tip":"All vegetarian. Ask for Jain-friendly preparations (no onion/garlic)."},
 {"name":"Heritage India","category":"food","subcategory":"indian","region":"dc","starred":false,"address":"2400 Wisconsin Ave NW, Washington DC","distance":"n/a","distanceText":"Georgetown, DC","lat":38.9202,"lng":-77.0713,"description":"Upscale Indian in Georgetown. Beautiful presentation, refined flavors. Good vegetarian selection. Nice option if you're exploring Georgetown and Dumbarton Oaks.","tip":"Near Dumbarton Oaks — combine with cherry blossom garden visit."},
 // ---- GAINESVILLE VA ----
-{"name":"VOSAP Event","category":"sightseeing","subcategory":"events","region":"dc","starred":true,"address":"Gainesville, VA","distance":"n/a","distanceText":"50 min from DC","lat":38.7957,"lng":-77.6131,"description":"Voice of SAP (Specially Abled People) event. Friday March 27 evening and Saturday March 28 from 3 PM onwards. The main reason for the DC/VA leg of the trip.","tip":"Gainesville is ~50 min drive from DC. Plan cherry blossom viewing for the morning of March 28 before VOSAP at 3 PM."}
+{"name":"VOSAP Event","category":"sightseeing","subcategory":"events","region":"dc","starred":true,"address":"Gainesville, VA","distance":"n/a","distanceText":"50 min from DC","lat":38.7957,"lng":-77.6131,"description":"Voice of SAP (Specially Abled People) event. Friday March 27 evening and Saturday March 28 from 3 PM onwards. The main reason for the DC/VA leg of the trip.","tip":"Gainesville is ~50 min drive from DC. Plan cherry blossom viewing for the morning of March 28 before VOSAP at 3 PM."},
+// ---- DC FOOD (Vishal Picks from Aug 2025 trip) ----
+{"name":"Old Ebbitt Grill","category":"food","subcategory":"finedining","region":"dc","starred":true,"address":"675 15th St NW, Washington DC","distance":"n/a","distanceText":"Penn Quarter, DC","lat":38.8986,"lng":-77.0340,"description":"Classic DC institution right by the White House — one of the oldest restaurants in the city. The oysters are the move. Vishal ate here during his August 2025 DC trip. Power-lunch vibes with great seafood.","tip":"Walking distance from the National Mall. Great for lunch between museum visits."},
+{"name":"Founding Farmers","category":"food","subcategory":"casual","region":"dc","starred":true,"address":"1900 Pennsylvania Ave NW, Washington DC","distance":"n/a","distanceText":"Foggy Bottom, DC","lat":38.8998,"lng":-77.0423,"description":"Farm-to-table brunch institution on Pennsylvania Ave. The chicken and waffles are legendary. Vishal went here during his August 2025 DC trip. Great vegetarian options too.","tip":"Perfect for brunch before a day on the Mall. Right near the White House."},
+{"name":"Bluejacket","category":"food","subcategory":"casual","region":"dc","starred":true,"address":"300 Tingey St SE, Washington DC (Navy Yard)","distance":"n/a","distanceText":"Navy Yard, DC","lat":38.8764,"lng":-76.9995,"description":"Brewery in the Navy Yard district with excellent craft beer flights. Vishal did a beer flight here in August 2025. Industrial-chic space, solid food menu too.","tip":"Near Nationals Park. Fun evening spot. Non-beer options available too."},
+// ---- DC SIGHTSEEING (Vishal Picks from Aug 2025 trip) ----
+{"name":"National Museum of African American History","category":"sightseeing","subcategory":"museums","region":"dc","starred":true,"address":"1400 Constitution Ave NW, Washington DC","distance":"n/a","distanceText":"National Mall","lat":38.8910,"lng":-77.0168,"description":"One of DC's most powerful museums. The bronze-latticed building is stunning. Four floors below ground trace history from slavery through civil rights. Vishal visited in August 2025 — an absolute must-do. Free but need timed entry passes.","tip":"Book timed entry passes at nmaahc.si.edu well in advance — they run out fast! Allow 3-4 hours."},
+{"name":"Great Falls Park","category":"sightseeing","subcategory":"unique","region":"dc","starred":true,"address":"9200 Old Dominion Dr, McLean, VA","distance":"n/a","distanceText":"30 min from DC","lat":38.9983,"lng":-77.2536,"description":"Dramatic waterfalls where the Potomac drops 76 feet through rocky cascades. Vishal went here in August 2025 — the overlooks are stunning. Easy trails, beautiful nature break from city sightseeing.","tip":"$20/vehicle entrance fee. Overlook Trail (0.4 mi) gives best views quickly. Close to the Gainesville route — perfect stop on the way to/from VOSAP."}
 ];
 
 // ============= CATEGORIES & ICONS =============
@@ -651,10 +697,10 @@ populatePlaceLinks('itin-lastday',d=>d.name==='Brooklyn Bridge Walk'||d.name==='
 populatePlaceLinks('itin-dessert',d=>d.subcategory==='dessert',4);
 populatePlaceLinks('itin-cherry',d=>d.category==='cherry-blossoms',4);
 populatePlaceLinks('itin-cherry-train',d=>d.category==='cherry-blossoms',4);
-populatePlaceLinks('itin-dc-food',d=>d.region==='dc'&&d.subcategory==='indian',5);
-populatePlaceLinks('itin-dc-food-train',d=>d.region==='dc'&&d.subcategory==='indian',5);
-populatePlaceLinks('itin-dc-sights',d=>d.region==='dc'&&d.subcategory==='monuments',4);
-populatePlaceLinks('itin-dc-sights-train',d=>d.region==='dc'&&d.subcategory==='monuments',4);
+populatePlaceLinks('itin-dc-food',d=>d.region==='dc'&&d.category==='food',8);
+populatePlaceLinks('itin-dc-food-train',d=>d.region==='dc'&&d.category==='food',8);
+populatePlaceLinks('itin-dc-sights',d=>d.region==='dc'&&(d.subcategory==='monuments'||d.subcategory==='museums'||d.subcategory==='unique'),6);
+populatePlaceLinks('itin-dc-sights-train',d=>d.region==='dc'&&(d.subcategory==='monuments'||d.subcategory==='museums'||d.subcategory==='unique'),6);
 }
 
 function populatePlaceLinks(elId,filterFn,max){
@@ -696,8 +742,79 @@ setTimeout(()=>map&&map.invalidateSize(),200);
 }else if(tab==='itinerary'){
 document.getElementById('tabItinerary').classList.add('active');
 document.getElementById('navItin').classList.add('active');
+}else if(tab==='chat'){
+document.getElementById('tabChat').classList.add('active');
+document.getElementById('navChat').classList.add('active');
+document.getElementById('chatInput').focus();
 }
 }
+
+// ============= CHAT =============
+let chatHistory=[];
+const chatInput=document.getElementById('chatInput');
+const chatMessages=document.getElementById('chatMessages');
+
+chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+
+function sendChat(){
+const msg=chatInput.value.trim();
+if(!msg)return;
+chatInput.value='';
+// Add user message
+chatHistory.push({role:'user',content:msg});
+const userDiv=document.createElement('div');
+userDiv.className='chat-msg user';
+userDiv.innerHTML=`<div class="chat-avatar">👤</div><div class="chat-bubble">${escapeHtml(msg)}</div>`;
+chatMessages.appendChild(userDiv);
+// Typing indicator
+const typingDiv=document.createElement('div');
+typingDiv.className='chat-msg bot';
+typingDiv.id='chatTyping';
+typingDiv.innerHTML=`<div class="chat-avatar">🗽</div><div class="chat-bubble"><div class="chat-typing"><span></span><span></span><span></span></div></div>`;
+chatMessages.appendChild(typingDiv);
+chatMessages.scrollTop=chatMessages.scrollHeight;
+document.getElementById('chatSend').disabled=true;
+// Get user location if available
+let lat=null,lng=null;
+if(navigator.geolocation){
+navigator.geolocation.getCurrentPosition(
+pos=>{fetchChat(msg,pos.coords.latitude,pos.coords.longitude);},
+()=>{fetchChat(msg,null,null);},
+{timeout:3000}
+);
+}else{fetchChat(msg,null,null);}
+}
+
+function fetchChat(msg,lat,lng){
+const body={message:msg,history:chatHistory.slice(0,-1)};
+if(lat&&lng){body.lat=lat;body.lng=lng;}
+fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+.then(r=>r.json())
+.then(data=>{
+const typing=document.getElementById('chatTyping');
+if(typing)typing.remove();
+const reply=data.reply||data.error||'Something went wrong!';
+chatHistory.push({role:'assistant',content:reply});
+const botDiv=document.createElement('div');
+botDiv.className='chat-msg bot';
+botDiv.innerHTML=`<div class="chat-avatar">🗽</div><div class="chat-bubble">${formatChat(reply)}</div>`;
+chatMessages.appendChild(botDiv);
+chatMessages.scrollTop=chatMessages.scrollHeight;
+document.getElementById('chatSend').disabled=false;
+})
+.catch(()=>{
+const typing=document.getElementById('chatTyping');
+if(typing)typing.remove();
+const errDiv=document.createElement('div');
+errDiv.className='chat-msg bot';
+errDiv.innerHTML=`<div class="chat-avatar">🗽</div><div class="chat-bubble">Oops, something went wrong. Try again!</div>`;
+chatMessages.appendChild(errDiv);
+document.getElementById('chatSend').disabled=false;
+});
+}
+
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function formatChat(s){return s.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');}
 
 // ============= INIT =============
 renderFilters();
